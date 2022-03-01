@@ -107,15 +107,20 @@ class SearchStratagies:
         self.end_condition=goal
         self.state_to_expand=state
     def breadth(self): #this is a single layer breadth search
-        childstates=state_to_expand.child
+        childstates=self.state_to_expand.child
         for i in range(len(childstates)):
             if childstates[i][0][0]==goal:
                 output.append([childstates[i][1], "End"])
                 break
-            else output.append(childstates[i][1])
+            else output.append(childstates[i][1]) 
+            #outputs move leading to the child states
         return output 
-    def depth(self):
-        a
+    def depth(self, branch_number):
+        childstates=self.state_to_expand.child
+        if childstates[branch_number][0][0]==goal:
+            output.append([childstates[branch_number][1], "End"])
+        else output.append(childstates[branch_number][1])
+        return output
     def astar(self):
         a
 
@@ -123,7 +128,7 @@ def bfs_itterate(node_number, state_board, goal_board, moves, state_path):
     node_number=node_number+1
     curr_state=StateRep(state_board, node_number)
     for i in range(len(state_path)):
-        if curr_state.compare_state_to_board():
+        if curr_state.compare_state_to_board(state_path[i]):
             node_number=node_number-1
             return False
     state_path.append(state_board)
@@ -170,8 +175,9 @@ def bfs(board, goal_board):
                 path=tstate_path[i].append(child_states[j][0]) #creates a flat array of path
                 state_paths.append(path) #new array of paths
                 move=tpath_moves[i].append(child_states[j][1])
-                path_move.append(move)
+                path_moves.append(move) #flattens to an array of arrays from a depth-diimensional array
     final_move_set=[]
+    #this next block is to select the shortest path and get deepest depth 
     for i in range(len(state_paths)):
         pl=len(state_paths[i])
         if pl < cost_of_path:
@@ -179,16 +185,35 @@ def bfs(board, goal_board):
             final_move_set=path_move[i]
         if len(state_paths[i]) > max_depth:
             max_depth=pl
-    output.append(moves)
+    #outout of the final results, minus ram and time which are calculated in the main body
+    output.append(final_move_set)
     output.append(cost_of_path)
     output.append(node_number)
     output.append(cost_of_path)
     output.append(max_depth)
     return output
 
-def dfs(board):
+
+def dfsitterate(node_number, board, goal_board, path, moves, branch_number):
+    node_number=node_number+1
+    current_state=StateRep(board, node_number)
+    for i in range(len(path)):
+        #check to see that the state has not been visited in this path
+        if current_state.compare_state_to_board(path[i]):
+            node_number=node_number-1
+            return "looped" #need three cases as to move back up tree to search deeper
+    path.append(board)
+    searchstate=SearchStratagies("dfs", current_state, goal_board)
+    moves.append(search_state.depth(branch_number)) #adds moves corresponding to the first unvisited branch of the tree
+    if len(moves[-1]) != 1 
+        return "goal"
+    else return "keep going"
+
+def dfs(board, goal_board):
     initial_state=StateRep(board, 0)
     child_states=inital_state.child
+    current_state=StateRep(child_states[0][0],1)
+    oldstate=initial_state
     moves=[]
     state_paths=[board]
     path_moves=[]
@@ -197,7 +222,31 @@ def dfs(board):
     max_depth=0
     node_number=0
     at_goal=False
-
+    branch_number=0 
+    path_number=0
+    if initial_state.compare_state_to_board(goal_board):
+        moves=["None"]
+        path_moves=["None"]
+        at_goal==True
+    while at_goal==False:
+        status=dfsitterate(node_number, current_state.parent[0], goal_board, state_paths[path_number], path_moves[path_number], branch_number) #itterates one step down a single path, returns status which can then be used to decided further iterations
+        if status=="looped":
+            branch_number=branch_number+1 #moves over one branch to the "right"
+            path_number=path_number+1 #calls this a new path
+            current_state=StateRep(oldstate.child[branch_number][0], node_number)
+            state_paths[path_number]=state_paths[path_number-1]
+            path_moves[path_number-1]
+        if status=="goal":
+            path_moves[branch_number].append(moves[-1])
+            state_paths[branch_number].append(current_state.child[branch_number])
+            at_goal=True
+        if status=="keep going"
+            path_moves[path_number].append(moves[-1])
+            state_paths[path_number].append(current_state.child[branch_number])
+            old_state=current_state
+            current_state=StateRep(current_state.child[branch_number][0], node_number)
+            branch_number=0 #goes back to the looking at the "left most"
+            
     final_move_set=[]
     for i in range(len(state_paths)):
         pl=len(state_paths[i])
@@ -259,7 +308,8 @@ if method=="A*" or method=="a*" or method=="Astar" or method=="astar" or method=
     print "Solving board using A* method with Manhattan Heuristic"
     out=ast(board, goal_board)
 else:
-    return "Method not recognized. \n Please enter method (bfs, dfs or a*)"
+    print "Method not recognized. \n Please enter method (bfs, dfs or a*)"
+    return 0
 
 end=time.time()
 time_run=end-start #running time for code (aside from outputting)
