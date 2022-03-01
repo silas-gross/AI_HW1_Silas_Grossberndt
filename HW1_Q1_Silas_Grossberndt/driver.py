@@ -13,13 +13,13 @@ class StateRep: #class to represent the state of the board
         #this expands the state parent and puts the children on the frontier to later be expanded
         children =[]
         if self.parent.up() !=0 :
-                children.append(self.parent.up())
+                children.append([self.parent.up(), "Up"])
         if self.parent.right() != 0:
-            children.append(self.parent.right())
+            children.append([self.parent.right(), "Right"])
         if self.parent.down() !=0:
-            children.append(self.parent.down())
+            children.append([self.parent.down(), "Down"])
         if self.parent.left() !=0:
-            children.append(self.parent.left())
+            children.append([self.parent.left(), "Left"])
         return children
     def compare_state_to_board(self, board_to_compare):
         if self.parent[0,0]==board_to_compare: #compares the list form of the two boards
@@ -100,10 +100,72 @@ class Board: #class to give a board representation
         j=self.zero_pos%3
         i=int(self.zero_pos/3)
         return [i,j]
+class SearchStratagies:
+    def __init__(self, method, state, goal):
+        self.method=method
+        self.output=[]
+        self.end_condition=goal
+        self.state_to_expand=state
+    def breadth(self): #this is a single layer breadth search
+        childstates=state_to_expand.child
+        for i in range(len(childstates)):
+            if childstates[i][0][0]==goal:
+                output.append(childstates[i][1])
+                output.append("End")
+                break
+            else output.append(childstates[i][1])
+        return output 
+    def depth(self):
+        a
+    def astar(self):
+        a
+
+def bfs_itterate(node_number, state_board, goal_board moves):
+    node_number=node_number+1
+    curr_state=StateRep(state_board, node_number)
+    searchstate=SearchStratgies("bfs", curr_state, goal_board)
+    smoves=searchstate.breadth()
+    for j in range(len(smoves)) moves.append(smoves)
+    if moves[-1]=="End":
+        return True
+    else return False
 def bfs(board, goal_board):
     initial_state=StateRep(board, 0)
-    sq_states=inital_state.child
-    
+    child_states=inital_state.child
+    moves=[]
+    output=[]
+    #time=0 #these really should be measured outside 
+    #ram_use=0 
+    cost_of_path=0 #these two are just same as node number for here 
+    #max_depth=0
+    node_number=0
+    subchild=[]
+    at_goal=False
+    if initial_state.compare_state_to_board(goal_board):
+        moves.append("None")
+        at_goal=True
+    at_goal=bfs_iterate(node_number, board, goal_board, moves)
+    cost_of_path=1
+    while at_goal==False:
+        cs=[] #holds frontier to expand
+        cost_of_path=cost_of_path+1
+        for i in range(len(child_states)):
+            at_goal=bfs_iterate(node_number, child_states[i][0], goal_board, moves)
+            cstaterep=StatesRep(child_state[i][0], node_number) #right now I am not properly finding unique states
+            cs.append(cstaterep)
+            if at_goal:
+                break
+        child_states=[]
+        for i in range(len(cs)): #sets up the next set of child states
+            for j in range(len(cs[i].child)
+            child_states.append(cs[i].child[j])
+    output.append(moves)
+    output.append(cost_of_path)
+    output.append(node_number)
+    output.append(cost_of_path)
+    output.append(cost_of_path+1)
+    return output
+
 def dfs(board):
     a
 
@@ -111,21 +173,35 @@ def ast(board):
     a
 #take in arguments of the method and board
 method=sys.argv[1] 
-board=sys.argv[2] 
+board=sys.argv[2]
+start=time.time()
 #create output file in write mode
 outfile=open("output.txt", "w")
 goal_board=[0,1,2,3,4,5,6,7,8] #current goal, leaving variable as to make code later more generalizable
-
+out=[]
 #process the method to determine approach 
 if method=="BFS" or method=="bfs" or method=="Bfs":
-    return "Solving board using breadth first search method"
-    bfs(board, goal_board)
+    print "Solving board using breadth first search method"
+    out=bfs(board, goal_board)
 if method=="DFS" or method=="dfs" or method=="Dfs":
-        return "Solving board using depth first search method"
-        dfs(board, goal_board)
+    print "Solving board using depth first search method"
+    out=dfs(board, goal_board)
 if method=="A*" or method=="a*" or method=="Astar" or method=="astar" or method=="A *" or method=="a *" or method=="A star" or method=="a star":
-    return "Solving board using A* method with Manhattan Heuristic"
-    ast(board, goal_board)
+    print "Solving board using A* method with Manhattan Heuristic"
+    out=ast(board, goal_board)
 else:
     return "Method not recognized. \n Please enter method (bfs, dfs or a*)"
+
+end=time.time()
+time_run=end-start #running time for code (aside from outputting)
+out.append(time_run)
+outfile.write("path_to_goal: " + out[0])
+outfile.write("\n cost_of_path: " +out[1])
+outfile.write("\n nodes_expanded: "+out[2])
+outfile.write("\n search_depth: "+out[3])
+outfile.write("\n max_search_depth: " + out[4])
+outfile.write("\n running_time: " + out[5])
+outfile.write("\n max_ram_usage: " +out[6])
+outfile.close()
+return 0
 
