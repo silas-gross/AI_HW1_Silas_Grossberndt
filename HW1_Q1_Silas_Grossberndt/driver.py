@@ -110,8 +110,7 @@ class SearchStratagies:
         childstates=state_to_expand.child
         for i in range(len(childstates)):
             if childstates[i][0][0]==goal:
-                output.append(childstates[i][1])
-                output.append("End")
+                output.append([childstates[i][1], "End"])
                 break
             else output.append(childstates[i][1])
         return output 
@@ -120,57 +119,127 @@ class SearchStratagies:
     def astar(self):
         a
 
-def bfs_itterate(node_number, state_board, goal_board moves):
+def bfs_itterate(node_number, state_board, goal_board, moves, state_path):
     node_number=node_number+1
     curr_state=StateRep(state_board, node_number)
+    for i in range(len(state_path)):
+        if curr_state.compare_state_to_board():
+            node_number=node_number-1
+            return False
+    state_path.append(state_board)
     searchstate=SearchStratgies("bfs", curr_state, goal_board)
     smoves=searchstate.breadth()
     for j in range(len(smoves)) moves.append(smoves)
-    if moves[-1]=="End":
+    if len(moves[-1]) !=1:
         return True
     else return False
+
 def bfs(board, goal_board):
     initial_state=StateRep(board, 0)
     child_states=inital_state.child
     moves=[]
+    state_paths=[board]
+    path_moves=[]
     output=[]
-    #time=0 #these really should be measured outside 
-    #ram_use=0 
-    cost_of_path=0 #these two are just same as node number for here 
-    #max_depth=0
+    cost_of_path=0  
+    max_depth=0
     node_number=0
-    subchild=[]
     at_goal=False
     if initial_state.compare_state_to_board(goal_board):
-        moves.append("None")
+        moves.append(["None"])
         at_goal=True
-    at_goal=bfs_iterate(node_number, board, goal_board, moves)
-    cost_of_path=1
+    at_goal=bfs_iterate(node_number, board, goal_board, moves, state_paths)
+    path_moves=moves
     while at_goal==False:
         cs=[] #holds frontier to expand
-        cost_of_path=cost_of_path+1
+        cost_of_path=cost_of_path+1 #set maxium path length to then refine below
         for i in range(len(child_states)):
-            at_goal=bfs_iterate(node_number, child_states[i][0], goal_board, moves)
+            at_goal=bfs_iterate(node_number, child_states[i][0], goal_board, moves, state_paths[i])
             cstaterep=StatesRep(child_state[i][0], node_number) #right now I am not properly finding unique states
             cs.append(cstaterep)
             if at_goal:
                 break
         child_states=[]
+        tstate_path=state_paths
+        state_paths=[]
+        tpath_moves=path_moves
+        path_moves=[]
         for i in range(len(cs)): #sets up the next set of child states
-            for j in range(len(cs[i].child)
-            child_states.append(cs[i].child[j])
+            child_states.append(cs[i].child)
+            for j in range(len(child_states)):
+                path=tstate_path[i].append(child_states[j][0]) #creates a flat array of path
+                state_paths.append(path) #new array of paths
+                move=tpath_moves[i].append(child_states[j][1])
+                path_move.append(move)
+    final_move_set=[]
+    for i in range(len(state_paths)):
+        pl=len(state_paths[i])
+        if pl < cost_of_path:
+            cost_of_path=pl
+            final_move_set=path_move[i]
+        if len(state_paths[i]) > max_depth:
+            max_depth=pl
     output.append(moves)
     output.append(cost_of_path)
     output.append(node_number)
     output.append(cost_of_path)
-    output.append(cost_of_path+1)
+    output.append(max_depth)
     return output
 
 def dfs(board):
-    a
+    initial_state=StateRep(board, 0)
+    child_states=inital_state.child
+    moves=[]
+    state_paths=[board]
+    path_moves=[]
+    output=[]
+    cost_of_path=0
+    max_depth=0
+    node_number=0
+    at_goal=False
+
+    final_move_set=[]
+    for i in range(len(state_paths)):
+        pl=len(state_paths[i])
+        if pl < cost_of_path:
+            cost_of_path=pl
+            final_move_set=path_move[i]
+        if len(state_paths[i]) > max_depth:
+            max_depth=pl
+    output.append(moves)
+    output.append(cost_of_path)
+    output.append(node_number)
+    output.append(cost_of_path)
+    output.append(max_depth)
+    return output
+
 
 def ast(board):
-    a
+    initial_state=StateRep(board, 0)
+    child_states=inital_state.child
+    moves=[]
+    state_paths=[board]
+    path_moves=[]
+    output=[]
+    cost_of_path=0
+    max_depth=0
+    node_number=0
+    at_goal=False
+
+    final_move_set=[]
+    for i in range(len(state_paths)):
+        pl=len(state_paths[i])
+        if pl < cost_of_path:
+            cost_of_path=pl
+            final_move_set=path_move[i]
+        if len(state_paths[i]) > max_depth:
+            max_depth=pl
+    output.append(moves)
+    output.append(cost_of_path)
+    output.append(node_number)
+    output.append(cost_of_path)
+    output.append(max_depth)
+    return output
 #take in arguments of the method and board
 method=sys.argv[1] 
 board=sys.argv[2]
