@@ -139,18 +139,20 @@ class SearchStratagies:
         allowed_nodes=[]
         for i in range(len(childstates)):
             if childstates[i][0]==goal:
-                return [childstates[i][0],0]
+                return [childstates[i][0],0, childstates[i][1]]
             b=Board(childstates[i][0])
             h=b.h
             if h<=max_allowed:
-                allowed_nodes.append(childstates[i][0],h)
+                allowed_nodes.append(childstates[i][0],h, childstates[i][1])
         hmin=max_allowed+1
         next_node=[]
         for i in range(len(allowed_nodes)):
             if allowed_nodes[i][1]<hmin:
                 hmin = allowed_nodes[i][1]
                 next_node=allowed_nodes[i]
-        return next_node
+        if next_node==[]:
+            return [self.state_to_expand.parent[0].board[0], -1, "NULL"]
+        else return next_node
 
         
 
@@ -291,8 +293,38 @@ def dfs(board, goal_board):
     output.append(cost_of_path)
     output.append(max_depth)
     return output
+def get_children_min_cost(child_states):
+    cost=10000
+    new_state_number=0
+    for i in range(len(child_states)):
+        b=Board(child_states[i][0])
+        if b.h <cost:
+            cost=b.h
+            if i>new_state_number:
+                new_state_number=i
+    return [cost, new_state_number]
+def get_max_cost(older_states, current_state, cost): #this gets the maximum allowable cost to move forwards 
+    current_states_children=current_state.child
+    cn=ast_itterate(current_states_children)
+    child_cost=cn[0]+cost
+    old_cost=10000
+    depth=len(older_states)
+    for i in range(depth):
+        depth_state=older_states[depth-i-1]
+        for j in range(len(depth_state)):
+            old_state_cost=depth_state[j][1]
+            depth_states=depth_state[j][0]
+            for k in range(len(depth_states)):
+                old_state_cost+=depth_states[k][1]
+            if old_state_cost<old_cost:
+                old_cost=old_state_cost
+    return min([child_cost, old_state_cost])
 
-def astar_itterate():
+def ast_itterate(older_states, current_state, goal_board, cost):
+    ss=SearchStratagies("astar", current_state, goal_board)
+    mcost=get_max_cost(older_states, current_state, cost)
+    next_node=ss.astar(mcost)
+    return next_node
 
 def ast(board, goal_board):
     initial_state=StateRep(board, 0)
@@ -303,21 +335,56 @@ def ast(board, goal_board):
     output=[]
     cost_of_path=0
     max_depth=0
+    depth_of_path+=1
     node_number=0
     at_goal=False
+    states=[initial_state]
+    cost=10000
+    new_state_number=0
+    otherboards_and_cost=[]
+    board_step=[]
+    for i in range(len(child_states)):
+        b=Board(child_states[i][0])
+        if b.h <cost:
+            cost=b.h
+            if i>new_state_number:
+                new_state_number=i
+    states.append([StateRep(child_states[new_state_number][0], node_number+1), cost+initial_step.parent[0].h+1])
+    moves.append(child_states[new_state_number][1])
+    for i in range(len(child_states)):
+        if i!= new_state_number:
+            b=Board(child_states[i][0])
+            board_step.append([child_states[i][0], b.h])
+    otherboards_and_cost.append([board_step, inital_step.parent[0].h])
+    board_step=[]
+    dummy_depth=1
+    while at_goal==False:
+        depth_of_path+=1
+        dummy_depth+=1
+        current_state=states[-1][0]
+        node=ast_itterate(otherboards_and_cost, current_state, states[-1][1])
+        if node[1]==0:
+            cost_of_path=states[-1][1]+1
+            moves.append(node[2])
+            at_goal=True
+        if node[1]==-1:
+            current_state=states[-2][0]
+            moves.pop()
+            if dummy_depth >max_depth:
+                max_depth=dummy_depth
+            dummy_depth=dummy_depth-1
+        else
+            current_state=StateRep(node[0], node_number+1)
+            moves.append(node[2])
+            states.append([current_state, node[1]+1)
 
-    final_move_set=[]
-    for i in range(len(state_paths)):
-        pl=len(state_paths[i])
-        if pl < cost_of_path:
-            cost_of_path=pl
-            final_move_set=path_move[i]
-        if len(state_paths[i]) > max_depth:
-            max_depth=pl
+    #need to keep a record of all the parent states to be able to check costs 
+    #otherboards has index of depth-1
+    
     output.append(moves)
     output.append(cost_of_path)
     output.append(node_number)
-    output.append(cost_of_path)
+    output.append(len(moves))
     output.append(max_depth)
     return output
 #take in arguments of the method and board
