@@ -12,13 +12,13 @@ class StateRep: #class to represent the state of the board
     def child_nodes(self): #generates first order child nodes from a board
         #this expands the state parent and puts the children on the frontier to later be expanded
         children =[]
-        if self.parent[0].up() !=0 :
+        if self.parent[0].up() !=self.compare_state_to_board(self.parent[0]) :
                 children.append([self.parent[0].up(), "Up"])
-        if self.parent[0].down() != 0:
+        if self.parent[0].down() != self.compare_state_to_board(self.parent[0]):
             children.append([self.parent[0].down(), "Down"])
-        if self.parent[0].down() !=0:
+        if self.parent[0].down() != self.compare_state_to_board(self.parent[0]):
             children.append([self.parent[0].left(), "Left"])
-        if self.parent[0].left() !=0:
+        if self.parent[0].left() !=self.compare_state_to_board(self.parent[0]):
             children.append([self.parent[0].right(), "Right"])
         return children
     def compare_state_to_board(self, board_to_compare):
@@ -38,69 +38,97 @@ class Board: #class to give a board representation
         self.zero_matrix_pos=self.get_zero_matrix_position() #just a bit of algebra to get the zero postion in row/collumn form
     def convert_to_matrix(self, inp):
         matrix=[]
+        k=0
+        if type(inp)==int:
+            return matrix
+        l=len(inp)
+        #print(inp)
+        if len(inp)<=2:
+            return [[0]]
         for i in range(3):
             row=[]
             for j in range(3):
                 k=3*i+j
+                if k>len(inp)-1:
+                    print("k too large", k)
+                    break
                 row.append(inp[k])
             matrix.append(row)
         return matrix
     #these four methods give board that results from taking an action 
     def up(self):
         if self.zero_matrix_pos[0] !=2:
-            moved_val=self.board[1][self.zero_matrix_pos[0]+1][self.zero_matrix_pos[1]]
-            self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
-            self.board[1][self.zero_matrix_pos[0]+1][self.zero_matrix_pos[1]]=0
-            self.board[0]=[]
-            for i in range(len(self.board[1])):
-                for j in range(len(self.board[1][i])):
-                    self.board[0].append(self.board[1][i][j])
+            matrix=self.board[1]
+            if len(matrix) <=self.zero_matrix_pos[0]+1:
+                return self.board
+            if len(matrix[self.zero_matrix_pos[0]]) < self.zero_matrix_pos[1]+1:
+                return self.board
+            moved_val=matrix[self.zero_matrix_pos[0]+1][self.zero_matrix_pos[1]]
+            print(moved_val)
+            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
+            matrix[self.zero_matrix_pos[0]+1][self.zero_matrix_pos[1]]=0
+            listform=[item for sublist in matrix for item in sublist] #flattens board to an output
+            print(matrix)
             del moved_val
-            return self.board
+            return [listform, matrix]
         else:
-            return 0
+            return self.board
 
     def down(self):
+        matrix=self.board[1]
         if self.zero_matrix_pos[0] !=0:
-            moved_val=self.board[1][self.zero_matrix_pos[0]-1][self.zero_matrix_pos[1]]
-            self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
-            self.board[1][self.zero_matrix_pos[0]-1][self.zero_matrix_pos[1]]=0
-            self.board[0]=[item for sublist in self.board[1] for item in sublist] #flattens board to an output
+            if self.zero_matrix_pos[0]==0:
+                return self.board
+            if len(matrix[self.zero_matrix_pos[0]]) < self.zero_matrix_pos[1]+1:
+                return self.board
+            moved_val=matrix[self.zero_matrix_pos[0]-1][self.zero_matrix_pos[1]]
+            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
+            matrix[self.zero_matrix_pos[0]-1][self.zero_matrix_pos[1]-1]=0
+            listform=[item for sublist in matrix for item in sublist] #flattens board to an output
             del moved_val
-            return self.board
+            return [listform, matrix]
         else:
-            return 0
-
+            return self.board
 
     def left(self):
+        matrix=self.board[1]
         if self.zero_matrix_pos[1] !=0:
-            moved_val=self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]-1]
-            self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
-            self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]-1]=0
-            self.board[0]=[item for sublist in self.board[1] for item in sublist] #flattens board to an output
-            del moved_val
-            return self.board
+            if len(matrix) <self.zero_matrix_pos[0]+1:
+                return self.board
+            if self.zero_matrix_pos[1]==0:
+                return self.board 
+            moved_val=matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]-1]
+            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
+            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]-1]=0
+            listform=[item for sublist in matrix for item in sublist] #flattens board to an output
+            return [listform, matrix]
         else:
-            return 0
-
-
+            return self.board
     def right(self):
         if self.zero_matrix_pos[1] !=2:
-            moved_val=self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]+1]
-            self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
-            self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]+1]=0
-            self.board[0]=[item for sublist in self.board[1] for item in sublist] #flattens board to an output
+            matrix=self.board[1]
+            if len(matrix) <self.zero_matrix_pos[0]+1:
+                return self.board
+            if len(matrix[self.zero_matrix_pos[0]]) <= self.zero_matrix_pos[1]+1:
+                return self.board
+            moved_val=matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]+1]
+            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
+            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]+1]=0
+            listform=[item for sublist in matrix for item in sublist] #flattens board to an output
             del moved_val
-            return self.board
+            return [listform, matrix]
         else:
-            return 0
+            return self.board
+
+
 
     def manhattan(self): #defining the manhattan heuristic, which is going to be done in a sort of hard coded manner here
         #I am using the distance measure in the matrix
         htemp=0 
+        k=0
         for i in range(len(self.board[1])):
-            for j in range(len(self.board[1])):
-                k = self.board[1][i][j] #gets value of matrix at row i collumn j 
+            for j in range(len(self.board[1][i])):
+                k = self.board[1][i][j] #gets value of matrix at row i collumn j
                 cdif = abs((k%3) - j)%3 #diffence in postion of column #cant pass through the back, hence absolute value
                 rdif = abs((int(k/3)-i)) #diffence in postion of rows 
                 htemp+=cdif+rdif #manhattan measure is just row and column differnce summed, is admissible, see readme
@@ -108,6 +136,8 @@ class Board: #class to give a board representation
     def get_zero_position(self): #finds the zero in the list as it is slightly faster than itterating over nested lists
         list_form=self.board[0]
         pos=0
+        if type(list_form)==int:
+            return pos
         for i in range(len(list_form)):
             if list_form[i]==0:
                 pos=i
@@ -116,6 +146,7 @@ class Board: #class to give a board representation
     def get_zero_matrix_position(self): #does algebra to return the zero's position in matrix from that in the list
         j=self.zero_pos%3
         i=int(self.zero_pos/3)
+        #print([i,j])
         return [i,j]
 class SearchStratagies:
     def __init__(self, method, state, goal):
@@ -125,13 +156,15 @@ class SearchStratagies:
         self.state_to_expand=state
     def breadth(self): #this is a single layer breadth search
         childstates=self.state_to_expand.child
+        out_moves=[]
         for i in range(len(childstates)):
             if childstates[i][0]==self.end_condition:
-                self.output.append([childstates[i][1], "End"])
+                out_moves.append([childstates[i][1], "End"])
                 break
             else:
-                self.output.append(childstates[i][1]) 
+                out_moves.append(childstates[i][1]) 
             #outputs move leading to the child states
+            self.output=out_moves
         return self.output 
     def depth(self, branch_number): #this is opening one note and going one layer down in depth
         childstates=self.state_to_expand.child
@@ -166,73 +199,114 @@ class SearchStratagies:
 
         
 
-def bfs_iterate(node_number, state_board, goal_board, moves, state_path):
-    curr_state=StateRep(state_board, node_number)
+def bfs_iterate(state_board, goal_board, moves, state_path):
+    curr_state=StateRep(state_board, 0)
     for i in range(len(state_path)):
         if curr_state.compare_state_to_board(state_path[i]):
             #node_number=node_number-1
-            return False
-    state_path.append(state_board)
+            return -1
     searchstate=SearchStratagies("bfs", curr_state, goal_board)
     smoves=searchstate.breadth()
+    #print(smoves)
     for j in range(len(smoves)):
         moves.append(smoves)
-    if len(moves[-1]) !=1 and moves[-1][-1]=="End":
-        return True
+    if len(moves[-1]) !=1 and moves[-1][-1]=="End": #checks if goal has been reached
+            return 0
     else:
-        return False
+        return 1
 
 def bfs(board, goal_board):
     initial_state=StateRep(board, 0)
     child_states=initial_state.child
-    print(child_states[1][0][1])
     moves=[]
-    state_paths=[board]
-    path_moves=[]
+    paths_moves=[]
     output=[]
     cost_of_path=0  
     max_depth=0
     node_number=0
     at_goal=False
     if initial_state.compare_state_to_board(goal_board)==True:
-        moves.append(["None"])
+        moves.append(["at Goal"])
         at_goal=True
-    at_goal=bfs_iterate(node_number, board, goal_board, moves, state_paths)
-    print(at_goal)
-    path_moves=moves
-    print(moves)
+    val=bfs_iterate(board, goal_board, moves, [])
+    if val==0:
+        at_goal=True
+        moves.append("Goal achived")
+    node_number+=len(child_states)
+    paths_moves=moves
+    visited_states=[board]
+    final_move_set=[]
+    states_to_visit=[]
+    for i in range(len(child_states)):
+        states_to_visit.append([[board], child_states[i]]) #sets up list of states that we are going to visit from a single node
+    #print(moves)
     while at_goal==False:
         cs=[] #holds frontier to expand
         cost_of_path=cost_of_path+1 #set maxium path length to then refine below
-        print([type(child_states[0][0][0]), type(goal_board), type(state_paths), type(node_number)])
-        for i in range(len(child_states)):
-            node_number+=1
-            at_goal=bfs_iterate(node_number, child_states[i][0][0], goal_board, moves, state_paths)
-            cstaterep=StateRep(child_states[i][0][0], node_number)
-            cs.append(cstaterep)
-            if at_goal:
-                break
-        child_states=[]
-        tstate_path=state_paths
-        state_paths=[]
-        tpath_moves=path_moves
-        path_moves=[]
-        for i in range(len(cs)): #sets up the next set of child states
-            child_states.append(cs[i].child)
-            for j in range(len(child_states)):
-                path=tstate_path[i].append(child_states[j][0][0]) #creates a flat array of path
-                state_paths.append(path) #new array of paths
-                move=tpath_moves[i].append(child_states[j][0][1])
-                path_moves.append(move) #flattens to an array of arrays from a depth-diimensional array
-    final_move_set=[]
+        print("depth of path ", cost_of_path)
+        if(cost_of_path==2):
+            at_goal=True
+        for i in range(len(states_to_visit)):
+            #visit all states from the parent node
+            #states to visit will hold the path of states to the parent node and then, we will flatten this to all arrays later down
+            children=states_to_visit[i][1] 
+            previous_states=states_to_visit[i][0]
+            if type(previous_states)==str:
+                continue
+            #this is the list of children in this node and the states to prevent visiting the same node twice
+            move=[]
+            path_moves=paths_moves[i]
+            if type(path_moves)==str:
+                paths_moves[i]=[path_moves]
+                path_moves=[path_moves]
+            children_of_children=[]
+            #clears out the held moves to use as a dummy container 
+            for j in range(len(children)):
+                node_number+=1
+                current_board=children[j][0][0]
+                if current_board==goal_board:
+                    print("reached goal")
+                    at_goal=True
+                    break
+
+                #now this expands the nodes on the frontier
+                val=bfs_iterate(current_board, goal_board, moves, previous_states)
+                if val==-1:
+                    node_number=node_number-1
+                if val==0:
+                    previous_states.append(current_board, goal_board)
+                    for k in range(len(moves)):
+                        p=path_moves
+                        p.append(moves[k]) #captures the moves that were taken up to geting to the end
+                        moves[k]=p
+                    final_move_set=moves[-1]
+                    at_goal==True
+                    break
+                if val==1:
+                    for k in range(len(moves)):
+                        p=path_moves
+                        p.append(moves[k])
+                        moves[k]=p
+                    previous_states.append(current_board)
+                    c=StateRep(current_board, node_number)
+                    children_of_children.append(c.child) #adds the children of the current node to later add to the stack
+            cs.append(children_of_children) #adds the new children to the frontier
+            #then I will need to flatten the array slightly later
+            paths_moves[i]=moves
+        states_to_visit=[]
+        tpaths=paths_moves
+        paths_moves=[]
+        for i in range(len(cs)): #flattening the frontier back into visit states
+            for j in range(len(cs[i])):
+                states_to_visit.append([tpaths[i][j], cs[i][j]])
+                paths_moves.append(tpaths[i][j])
+                
+    
     #this next block is to select the shortest path and get deepest depth 
-    for i in range(len(state_paths)):
-        pl=len(state_paths[i])
-        if pl < cost_of_path:
-            cost_of_path=pl
-            final_move_set=path_move[i]
-        if len(state_paths[i]) > max_depth:
-            max_depth=pl
+    for i in range(len(paths_moves)):
+        if len(paths_moves[i]) > max_depth:
+            max_depth=len(paths_moves[i])
+    cost_of_path=len(final_move_set)
     #outout of the final results, minus ram and time which are calculated in the main body
     output.append(final_move_set)
     output.append(cost_of_path)
@@ -362,7 +436,7 @@ def ast(board, goal_board):
     board_step=[]
     for i in range(len(child_states)):
         b=Board(child_states[i][0][0])
-        print(b.h)
+        #print(b.h)
         if int(b.h) <cost:
             cost=int(b.h)
             if i>new_state_number:
