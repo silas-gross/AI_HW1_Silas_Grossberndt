@@ -4,42 +4,42 @@ import sys
 import time
 
 class StateRep: #class to represent the state of the board
-    n_states=
+ 
     def __init__(self, board, counter):
          #tracks the state by assigning a number to the state that is given by order in which the state is visited
         self.parent=[Board(board), counter]
-        self.child=child_nodes()
+        self.child=self.child_nodes()
     def child_nodes(self): #generates first order child nodes from a board
         #this expands the state parent and puts the children on the frontier to later be expanded
         children =[]
         if self.parent[0].up() !=0 :
-                children.append([self.parent.up(), "Up"])
+                children.append([self.parent[0].up(), "Up"])
         if self.parent[0].down() != 0:
-            children.append([self.parent.down(), "Down"])
+            children.append([self.parent[0].down(), "Down"])
         if self.parent[0].down() !=0:
-            children.append([self.parent.left(), "Left"])
+            children.append([self.parent[0].left(), "Left"])
         if self.parent[0].left() !=0:
-            children.append([self.parent.right(), "Right"])
+            children.append([self.parent[0].right(), "Right"])
         return children
     def compare_state_to_board(self, board_to_compare):
         if self.parent[0].board[0]==board_to_compare: #compares the list form of the two boards
-            return true
+            return True 
         else:
-            return false
-    def get_state: #allows for easy checking to see if state has been visited yet
-        return counter
+            return False
+    #def get_state: #allows for easy checking to see if state has been visited yet
+     #   return counter
 class Board: #class to give a board representation 
     
     def __init__(self, input_board):
-        self.board=[input_board, convert_to_matrix(input_board)]
-        self.h=manhattan()
+        self.board=[input_board, self.convert_to_matrix(input_board)]
+        self.h=self.manhattan()
         #board contains representation of itself in list an matrix form to allow the zero position searcher to more quickly find a zero, but also makes the representation of the moves simpler to handle logically 
-        self.zero_pos=get_zero_position() #gets the postion of the zero to give on which numbers the actions may act
-        self.zero_matrix_pos=get_zero_matrix_position() #just a bit of algebra to get the zero postion in row/collumn form
+        self.zero_pos=self.get_zero_position() #gets the postion of the zero to give on which numbers the actions may act
+        self.zero_matrix_pos=self.get_zero_matrix_position() #just a bit of algebra to get the zero postion in row/collumn form
     def convert_to_matrix(self, inp):
         matrix=[]
-        row=[]
         for i in range(3):
+            row=[]
             for j in range(3):
                 k=3*i+j
                 row.append(inp[k])
@@ -54,7 +54,8 @@ class Board: #class to give a board representation
             self.board[0]=[item for sublist in self.board[1] for item in sublist] #flattens board to an output
             del moved_val
             return self.board
-        else return 0
+        else:
+            return 0
 
     def down(self):
         if self.zero_matrix_pos[0] !=0:
@@ -64,7 +65,8 @@ class Board: #class to give a board representation
             self.board[0]=[item for sublist in self.board[1] for item in sublist] #flattens board to an output
             del moved_val
             return self.board
-        else return 0
+        else:
+            return 0
 
 
     def left(self):
@@ -75,7 +77,8 @@ class Board: #class to give a board representation
             self.board[0]=[item for sublist in self.board[1] for item in sublist] #flattens board to an output
             del moved_val
             return self.board
-        else return 0
+        else:
+            return 0
 
 
     def right(self):
@@ -86,7 +89,8 @@ class Board: #class to give a board representation
             self.board[0]=[item for sublist in self.board[1] for item in sublist] #flattens board to an output
             del moved_val
             return self.board
-        else return 0
+        else:
+            return 0
 
     def manhattan(self): #defining the manhattan heuristic, which is going to be done in a sort of hard coded manner here
         #I am using the distance measure in the matrix
@@ -106,7 +110,7 @@ class Board: #class to give a board representation
                 pos=i
                 break
         return pos
-    def get_zero_matrix_postition(self): #does algebra to return the zero's position in matrix from that in the list
+    def get_zero_matrix_position(self): #does algebra to return the zero's position in matrix from that in the list
         j=self.zero_pos%3
         i=int(self.zero_pos/3)
         return [i,j]
@@ -119,17 +123,19 @@ class SearchStratagies:
     def breadth(self): #this is a single layer breadth search
         childstates=self.state_to_expand.child
         for i in range(len(childstates)):
-            if childstates[i][0]==goal:
+            if childstates[i][0]==self.end_condition:
                 self.output.append([childstates[i][1], "End"])
                 break
-            else self.output.append(childstates[i][1]) 
+            else:
+                self.output.append(childstates[i][1]) 
             #outputs move leading to the child states
         return self.output 
     def depth(self, branch_number): #this is opening one note and going one layer down in depth
         childstates=self.state_to_expand.child
-        if childstates[branch_number][0][0]==goal:
+        if childstates[branch_number][0][0]==self.end_condition:
             self.output.append([childstates[branch_number][1], "End"])
-        else self.output.append(childstates[branch_number][1])
+        else:
+            self.output.append(childstates[branch_number][1])
         return self.output
     def astar(self, max_allowed): 
         #searchs for nodes that are the next priority by looking at a single layer to find nodes that can be expanded
@@ -138,7 +144,7 @@ class SearchStratagies:
         childstates=self.state_to_expand.child
         allowed_nodes=[]
         for i in range(len(childstates)):
-            if childstates[i][0]==goal:
+            if childstates[i][0]==self.end_condition:
                 return [childstates[i][0],0, childstates[i][1]]
             b=Board(childstates[i][0])
             h=b.h
@@ -152,11 +158,12 @@ class SearchStratagies:
                 next_node=allowed_nodes[i]
         if next_node==[]:
             return [self.state_to_expand.parent[0].board[0], -1, "NULL"]
-        else return next_node
+        else:
+            return next_node
 
         
 
-def bfs_itterate(node_number, state_board, goal_board, moves, state_path):
+def bfs_iterate(node_number, state_board, goal_board, moves, state_path):
     node_number=node_number+1
     curr_state=StateRep(state_board, node_number)
     for i in range(len(state_path)):
@@ -164,16 +171,18 @@ def bfs_itterate(node_number, state_board, goal_board, moves, state_path):
             node_number=node_number-1
             return False
     state_path.append(state_board)
-    searchstate=SearchStratgies("bfs", curr_state, goal_board)
+    searchstate=SearchStratagies("bfs", curr_state, goal_board)
     smoves=searchstate.breadth()
-    for j in range(len(smoves)) moves.append(smoves)
+    for j in range(len(smoves)):
+        moves.append(smoves)
     if len(moves[-1]) !=1:
         return True
-    else return False
+    else:
+        return False
 
 def bfs(board, goal_board):
     initial_state=StateRep(board, 0)
-    child_states=inital_state.child
+    child_states=initial_state.child
     moves=[]
     state_paths=[board]
     path_moves=[]
@@ -237,13 +246,14 @@ def dfsitterate(node_number, board, goal_board, path, moves, branch_number):
     path.append(board)
     searchstate=SearchStratagies("dfs", current_state, goal_board)
     moves.append(search_state.depth(branch_number)) #adds moves corresponding to the first unvisited branch of the tree
-    if len(moves[-1]) != 1 
+    if len(moves[-1]) != 1:
         return "goal"
-    else return "keep going"
+    else:
+        return "keep going"
 
 def dfs(board, goal_board):
     initial_state=StateRep(board, 0)
-    child_states=inital_state.child
+    child_states=initial_state.child
     current_state=StateRep(child_states[0][0],1)
     oldstate=initial_state
     moves=[]
@@ -268,11 +278,11 @@ def dfs(board, goal_board):
             current_state=StateRep(oldstate.child[branch_number][0], node_number)
             state_paths[path_number]=state_paths[path_number-1]
             path_moves[path_number-1]
-        if status=="goal":
+        elif status=="goal":
             path_moves[branch_number].append(moves[-1])
             state_paths[branch_number].append(current_state.child[branch_number])
             at_goal=True
-        if status=="keep going"
+        elif status=="keep going":
             path_moves[path_number].append(moves[-1])
             state_paths[path_number].append(current_state.child[branch_number])
             old_state=current_state
@@ -328,7 +338,7 @@ def ast_itterate(older_states, current_state, goal_board, cost):
 
 def ast(board, goal_board):
     initial_state=StateRep(board, 0)
-    child_states=inital_state.child
+    child_states=initial_state.child
     moves=[]
     state_paths=[board]
     path_moves=[]
@@ -355,7 +365,7 @@ def ast(board, goal_board):
         if i!= new_state_number:
             b=Board(child_states[i][0])
             board_step.append([child_states[i][0], b.h])
-    otherboards_and_cost.append([board_step, inital_step.parent[0].h])
+    otherboards_and_cost.append([board_step, initial_step.parent[0].h])
     board_step=[]
     dummy_depth=1
     while at_goal==False:
@@ -367,16 +377,16 @@ def ast(board, goal_board):
             cost_of_path=states[-1][1]+1
             moves.append(node[2])
             at_goal=True
-        if node[1]==-1:
+        elif node[1]==-1:
             current_state=states[-2][0]
             moves.pop()
             if dummy_depth >max_depth:
                 max_depth=dummy_depth
             dummy_depth=dummy_depth-1
-        else
+        else:
             current_state=StateRep(node[0], node_number+1)
             moves.append(node[2])
-            states.append([current_state, node[1]+1)
+            states.append([current_state, node[1]+1])
 
     #need to keep a record of all the parent states to be able to check costs 
     #otherboards has index of depth-1
@@ -388,8 +398,14 @@ def ast(board, goal_board):
     output.append(max_depth)
     return output
 #take in arguments of the method and board
-method=sys.argv[1] 
-board=sys.argv[2]
+method=str(sys.argv[1])
+boardin=sys.argv[2]
+board=[]
+for i in range(len(boardin)):
+    if boardin[i]==',':
+        continue
+    else:
+        board.append(int(boardin[i]))
 start=time.time()
 #create output file in write mode
 outfile=open("output.txt", "w")
@@ -397,28 +413,36 @@ goal_board=[0,1,2,3,4,5,6,7,8] #current goal, leaving variable as to make code l
 out=[]
 #process the method to determine approach 
 if method=="BFS" or method=="bfs" or method=="Bfs":
-    print "Solving board using breadth first search method"
+    print( "Solving board using breadth first search method")
     out=bfs(board, goal_board)
-if method=="DFS" or method=="dfs" or method=="Dfs":
-    print "Solving board using depth first search method"
+elif method=="DFS" or method=="dfs" or method=="Dfs":
+    print ("Solving board using depth first search method")
     out=dfs(board, goal_board)
-if method=="A*" or method=="a*" or method=="Ast" or method=="ast" or method=="A *" or method=="a *" or method=="A star" or method=="a star":
-    print "Solving board using A* method with Manhattan Heuristic"
+elif method=="A*" or method=="a*" or method=="Ast" or method=="ast" or method=="A *" or method=="a *" or method=="A star" or method=="a star":
+    print( "Solving board using A* method with Manhattan Heuristic")
     out=ast(board, goal_board)
 else:
-    print "Method not recognized. \n Please enter method (bfs, dfs or a*)"
-    return 0
+    print ("Method not recognized. \n Please enter method (bfs, dfs or ast)" +method)
+    
 
 end=time.time()
 time_run=end-start #running time for code (aside from outputting)
 out.append(time_run)
-outfile.write("path_to_goal: " + out[0])
-outfile.write("\n cost_of_path: " +out[1])
-outfile.write("\n nodes_expanded: "+out[2])
-outfile.write("\n search_depth: "+out[3])
-outfile.write("\n max_search_depth: " + out[4])
-outfile.write("\n running_time: " + out[5])
-outfile.write("\n max_ram_usage: " +out[6])
+out.append(rs.getrusage(0).ru_maxrss)
+path="["
+for i in range(len(out[0])):
+    path+="'"+out[0][i]+"'"
+    if i!=len(out[0])-1:
+        path+=","
+path+="]"
+outfile.write("path_to_goal: " + path)
+outfile.write("\n cost_of_path: " +str(out[1]))
+outfile.write("\n nodes_expanded: "+str(out[2]))
+outfile.write("\n search_depth: "+str(out[3]))
+outfile.write("\n max_search_depth: " + str(out[4]))
+outfile.write("\n running_time: " + str(out[5]))
+outfile.write("\n max_ram_usage: " +str(out[6]))
 outfile.close()
-return 0
+
+
 
