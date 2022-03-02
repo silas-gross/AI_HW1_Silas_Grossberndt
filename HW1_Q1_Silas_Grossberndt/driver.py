@@ -12,17 +12,17 @@ class StateRep: #class to represent the state of the board
     def child_nodes(self): #generates first order child nodes from a board
         #this expands the state parent and puts the children on the frontier to later be expanded
         children =[]
-        if self.parent.up() !=0 :
+        if self.parent[0].up() !=0 :
                 children.append([self.parent.up(), "Up"])
-        if self.parent.right() != 0:
-            children.append([self.parent.right(), "Right"])
-        if self.parent.down() !=0:
+        if self.parent[0].down() != 0:
             children.append([self.parent.down(), "Down"])
-        if self.parent.left() !=0:
+        if self.parent[0].down() !=0:
             children.append([self.parent.left(), "Left"])
+        if self.parent[0].left() !=0:
+            children.append([self.parent.right(), "Right"])
         return children
     def compare_state_to_board(self, board_to_compare):
-        if self.parent[0,0]==board_to_compare: #compares the list form of the two boards
+        if self.parent[0].board[0]==board_to_compare: #compares the list form of the two boards
             return true
         else:
             return false
@@ -32,6 +32,7 @@ class Board: #class to give a board representation
     
     def __init__(self, input_board):
         self.board=[input_board, convert_to_matrix(input_board)]
+        self.h=manhattan()
         #board contains representation of itself in list an matrix form to allow the zero position searcher to more quickly find a zero, but also makes the representation of the moves simpler to handle logically 
         self.zero_pos=get_zero_position() #gets the postion of the zero to give on which numbers the actions may act
         self.zero_matrix_pos=get_zero_matrix_position() #just a bit of algebra to get the zero postion in row/collumn form
@@ -40,7 +41,7 @@ class Board: #class to give a board representation
         row=[]
         for i in range(3):
             for j in range(3):
-                k=i+j
+                k=3*i+j
                 row.append(inp[k])
             matrix.append(row)
         return matrix
@@ -87,7 +88,16 @@ class Board: #class to give a board representation
             return self.board
         else return 0
 
-
+    def manhattan(self): #defining the manhattan heuristic, which is going to be done in a sort of hard coded manner here
+        #I am using the distance measure in the matrix
+        htemp=0 
+        for i in range(len(self.board[1])):
+            for j in range(len(self.board[1])):
+                k = self.board[1][i][j] #gets value of matrix at row i collumn j 
+                cdif = abs((k%3) - j)%3 #diffence in postion of column #cant pass through the back, hence absolute value
+                rdif = abs((int(k/3)-i)) #diffence in postion of rows 
+                htemp+=cdif+rdif #manhattan measure is just row and column differnce summed, is admissible, see readme
+        self.h=htemp
     def get_zero_position(self): #finds the zero in the list as it is slightly faster than itterating over nested lists
         list_form=self.board[0]
         pos=0
@@ -96,7 +106,7 @@ class Board: #class to give a board representation
                 pos=i
                 break
         return pos
-    def get_zero_matrix_postition(self): #does algebra to return the list
+    def get_zero_matrix_postition(self): #does algebra to return the zero's position in matrix from that in the list
         j=self.zero_pos%3
         i=int(self.zero_pos/3)
         return [i,j]
@@ -109,20 +119,40 @@ class SearchStratagies:
     def breadth(self): #this is a single layer breadth search
         childstates=self.state_to_expand.child
         for i in range(len(childstates)):
-            if childstates[i][0][0]==goal:
-                output.append([childstates[i][1], "End"])
+            if childstates[i][0]==goal:
+                self.output.append([childstates[i][1], "End"])
                 break
-            else output.append(childstates[i][1]) 
+            else self.output.append(childstates[i][1]) 
             #outputs move leading to the child states
-        return output 
-    def depth(self, branch_number):
+        return self.output 
+    def depth(self, branch_number): #this is opening one note and going one layer down in depth
         childstates=self.state_to_expand.child
         if childstates[branch_number][0][0]==goal:
-            output.append([childstates[branch_number][1], "End"])
-        else output.append(childstates[branch_number][1])
-        return output
-    def astar(self):
-        a
+            self.output.append([childstates[branch_number][1], "End"])
+        else self.output.append(childstates[branch_number][1])
+        return self.output
+    def astar(self, max_allowed): 
+        #searchs for nodes that are the next priority by looking at a single layer to find nodes that can be expanded
+        #since the g score is cosntant at 1, we can just worry about the heuristic
+        #aim is to output the score for each node in a child that is allowed at that particluar score
+        childstates=self.state_to_expand.child
+        allowed_nodes=[]
+        for i in range(len(childstates)):
+            if childstates[i][0]==goal:
+                return [childstates[i][0],0]
+            b=Board(childstates[i][0])
+            h=b.h
+            if h<=max_allowed:
+                allowed_nodes.append(childstates[i][0],h)
+        hmin=max_allowed+1
+        next_node=[]
+        for i in range(len(allowed_nodes)):
+            if allowed_nodes[i][1]<hmin:
+                hmin = allowed_nodes[i][1]
+                next_node=allowed_nodes[i]
+        return next_node
+
+        
 
 def bfs_itterate(node_number, state_board, goal_board, moves, state_path):
     node_number=node_number+1
@@ -229,7 +259,7 @@ def dfs(board, goal_board):
         path_moves=["None"]
         at_goal==True
     while at_goal==False:
-        status=dfsitterate(node_number, current_state.parent[0], goal_board, state_paths[path_number], path_moves[path_number], branch_number) #itterates one step down a single path, returns status which can then be used to decided further iterations
+        status=dfsitterate(node_number, current_state.parent[0].board[0], goal_board, state_paths[path_number], path_moves[path_number], branch_number) #itterates one step down a single path, returns status which can then be used to decided further iterations
         if status=="looped":
             branch_number=branch_number+1 #moves over one branch to the "right"
             path_number=path_number+1 #calls this a new path
@@ -262,8 +292,9 @@ def dfs(board, goal_board):
     output.append(max_depth)
     return output
 
+def astar_itterate():
 
-def ast(board):
+def ast(board, goal_board):
     initial_state=StateRep(board, 0)
     child_states=inital_state.child
     moves=[]
@@ -304,7 +335,7 @@ if method=="BFS" or method=="bfs" or method=="Bfs":
 if method=="DFS" or method=="dfs" or method=="Dfs":
     print "Solving board using depth first search method"
     out=dfs(board, goal_board)
-if method=="A*" or method=="a*" or method=="Astar" or method=="astar" or method=="A *" or method=="a *" or method=="A star" or method=="a star":
+if method=="A*" or method=="a*" or method=="Ast" or method=="ast" or method=="A *" or method=="a *" or method=="A star" or method=="a star":
     print "Solving board using A* method with Manhattan Heuristic"
     out=ast(board, goal_board)
 else:
