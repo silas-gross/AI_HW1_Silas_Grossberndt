@@ -51,7 +51,10 @@ class Board: #class to give a board representation
             moved_val=self.board[1][self.zero_matrix_pos[0]+1][self.zero_matrix_pos[1]]
             self.board[1][self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
             self.board[1][self.zero_matrix_pos[0]+1][self.zero_matrix_pos[1]]=0
-            self.board[0]=[item for sublist in self.board[1] for item in sublist] #flattens board to an output
+            self.board[0]=[]
+            for i in range(len(self.board[1])):
+                for j in range(len(self.board[1][i])):
+                    self.board[0].append(self.board[1][i][j])
             del moved_val
             return self.board
         else:
@@ -101,7 +104,7 @@ class Board: #class to give a board representation
                 cdif = abs((k%3) - j)%3 #diffence in postion of column #cant pass through the back, hence absolute value
                 rdif = abs((int(k/3)-i)) #diffence in postion of rows 
                 htemp+=cdif+rdif #manhattan measure is just row and column differnce summed, is admissible, see readme
-        self.h=htemp
+        return int(htemp)
     def get_zero_position(self): #finds the zero in the list as it is slightly faster than itterating over nested lists
         list_form=self.board[0]
         pos=0
@@ -144,10 +147,10 @@ class SearchStratagies:
         childstates=self.state_to_expand.child
         allowed_nodes=[]
         for i in range(len(childstates)):
-            if childstates[i][0]==self.end_condition:
-                return [childstates[i][0],0, childstates[i][1]]
+            if childstates[i][0][0]==self.end_condition:
+                return [childstates[i][0][0],0, childstates[i][0][1]]
             b=Board(childstates[i][0])
-            h=b.h
+            h=int(b.h)
             if h<=max_allowed:
                 allowed_nodes.append(childstates[i][0],h, childstates[i][1])
         hmin=max_allowed+1
@@ -164,18 +167,17 @@ class SearchStratagies:
         
 
 def bfs_iterate(node_number, state_board, goal_board, moves, state_path):
-    node_number=node_number+1
     curr_state=StateRep(state_board, node_number)
     for i in range(len(state_path)):
         if curr_state.compare_state_to_board(state_path[i]):
-            node_number=node_number-1
+            #node_number=node_number-1
             return False
     state_path.append(state_board)
     searchstate=SearchStratagies("bfs", curr_state, goal_board)
     smoves=searchstate.breadth()
     for j in range(len(smoves)):
         moves.append(smoves)
-    if len(moves[-1]) !=1:
+    if len(moves[-1]) !=1 and moves[-1][-1]=="End":
         return True
     else:
         return False
@@ -183,6 +185,7 @@ def bfs_iterate(node_number, state_board, goal_board, moves, state_path):
 def bfs(board, goal_board):
     initial_state=StateRep(board, 0)
     child_states=initial_state.child
+    print(child_states[1][0][1])
     moves=[]
     state_paths=[board]
     path_moves=[]
@@ -191,17 +194,21 @@ def bfs(board, goal_board):
     max_depth=0
     node_number=0
     at_goal=False
-    if initial_state.compare_state_to_board(goal_board):
+    if initial_state.compare_state_to_board(goal_board)==True:
         moves.append(["None"])
         at_goal=True
     at_goal=bfs_iterate(node_number, board, goal_board, moves, state_paths)
+    print(at_goal)
     path_moves=moves
+    print(moves)
     while at_goal==False:
         cs=[] #holds frontier to expand
         cost_of_path=cost_of_path+1 #set maxium path length to then refine below
+        print([type(child_states[0][0][0]), type(goal_board), type(state_paths), type(node_number)])
         for i in range(len(child_states)):
-            at_goal=bfs_iterate(node_number, child_states[i][0], goal_board, moves, state_paths[i])
-            cstaterep=StatesRep(child_state[i][0], node_number) #right now I am not properly finding unique states
+            node_number+=1
+            at_goal=bfs_iterate(node_number, child_states[i][0][0], goal_board, moves, state_paths)
+            cstaterep=StateRep(child_states[i][0][0], node_number)
             cs.append(cstaterep)
             if at_goal:
                 break
@@ -213,9 +220,9 @@ def bfs(board, goal_board):
         for i in range(len(cs)): #sets up the next set of child states
             child_states.append(cs[i].child)
             for j in range(len(child_states)):
-                path=tstate_path[i].append(child_states[j][0]) #creates a flat array of path
+                path=tstate_path[i].append(child_states[j][0][0]) #creates a flat array of path
                 state_paths.append(path) #new array of paths
-                move=tpath_moves[i].append(child_states[j][1])
+                move=tpath_moves[i].append(child_states[j][0][1])
                 path_moves.append(move) #flattens to an array of arrays from a depth-diimensional array
     final_move_set=[]
     #this next block is to select the shortest path and get deepest depth 
@@ -308,8 +315,8 @@ def get_children_min_cost(child_states):
     new_state_number=0
     for i in range(len(child_states)):
         b=Board(child_states[i][0])
-        if b.h <cost:
-            cost=b.h
+        if int(b.h) <cost:
+            cost=int(b.h)
             if i>new_state_number:
                 new_state_number=i
     return [cost, new_state_number]
@@ -345,7 +352,7 @@ def ast(board, goal_board):
     output=[]
     cost_of_path=0
     max_depth=0
-    depth_of_path+=1
+    depth_of_path=1
     node_number=0
     at_goal=False
     states=[initial_state]
@@ -354,18 +361,19 @@ def ast(board, goal_board):
     otherboards_and_cost=[]
     board_step=[]
     for i in range(len(child_states)):
-        b=Board(child_states[i][0])
-        if b.h <cost:
-            cost=b.h
+        b=Board(child_states[i][0][0])
+        print(b.h)
+        if int(b.h) <cost:
+            cost=int(b.h)
             if i>new_state_number:
                 new_state_number=i
-    states.append([StateRep(child_states[new_state_number][0], node_number+1), cost+initial_step.parent[0].h+1])
+    states.append([StateRep(child_states[new_state_number][0][0], node_number+1), cost+initial_step.parent[0].h+1])
     moves.append(child_states[new_state_number][1])
     for i in range(len(child_states)):
         if i!= new_state_number:
             b=Board(child_states[i][0])
-            board_step.append([child_states[i][0], b.h])
-    otherboards_and_cost.append([board_step, initial_step.parent[0].h])
+            board_step.append([child_states[i][0], int(b.h)])
+    otherboards_and_cost.append([board_step, int(initial_step.parent[0].h)])
     board_step=[]
     dummy_depth=1
     while at_goal==False:
