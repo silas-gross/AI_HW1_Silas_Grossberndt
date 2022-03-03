@@ -12,17 +12,19 @@ class StateRep: #class to represent the state of the board
     def child_nodes(self): #generates first order child nodes from a board
         #this expands the state parent and puts the children on the frontier to later be expanded
         children =[]
-        if self.parent[0].up() !=self.compare_state_to_board(self.parent[0]) :
-                children.append([self.parent[0].up(), "Up"])
-        if self.parent[0].down() != self.compare_state_to_board(self.parent[0]):
+        if self.parent[0].up(self.parent[0].board) !=[0] :
+                children.append([self.parent[0].up(self.parent[0].board), "Up"])
+        if self.parent[0].down() != [0]:
             children.append([self.parent[0].down(), "Down"])
-        if self.parent[0].down() != self.compare_state_to_board(self.parent[0]):
+        if self.parent[0].left() != [0]:
             children.append([self.parent[0].left(), "Left"])
-        if self.parent[0].left() !=self.compare_state_to_board(self.parent[0]):
+        if self.parent[0].right() != [0]:
             children.append([self.parent[0].right(), "Right"])
         return children
-    def compare_state_to_board(self, board_to_compare):
-        if self.parent[0].board[0]==board_to_compare: #compares the list form of the two boards
+    def compare_state_to_board(self, board_to_compare): #compares the list form of the two boards
+        listform=self.parent[0].board[0]
+        if listform==board_to_compare:
+            print("matched")
             return True 
         else:
             return False
@@ -34,8 +36,8 @@ class Board: #class to give a board representation
         self.board=[input_board, self.convert_to_matrix(input_board)]
         self.h=self.manhattan()
         #board contains representation of itself in list an matrix form to allow the zero position searcher to more quickly find a zero, but also makes the representation of the moves simpler to handle logically 
-        self.zero_pos=self.get_zero_position() #gets the postion of the zero to give on which numbers the actions may act
-        self.zero_matrix_pos=self.get_zero_matrix_position() #just a bit of algebra to get the zero postion in row/collumn form
+        self.zero_pos=self.get_zero_position(input_board) #gets the postion of the zero to give on which numbers the actions may act
+        self.zero_matrix_pos=self.get_zero_matrix_position(self.zero_pos) #just a bit of algebra to get the zero postion in row/collumn form
     def convert_to_matrix(self, inp):
         matrix=[]
         k=0
@@ -56,69 +58,93 @@ class Board: #class to give a board representation
             matrix.append(row)
         return matrix
     #these four methods give board that results from taking an action 
-    def up(self):
-        if self.zero_matrix_pos[0] !=2:
-            matrix=self.board[1]
-            if len(matrix) <=self.zero_matrix_pos[0]+1:
-                return self.board
-            if len(matrix[self.zero_matrix_pos[0]]) < self.zero_matrix_pos[1]+1:
-                return self.board
-            moved_val=matrix[self.zero_matrix_pos[0]+1][self.zero_matrix_pos[1]]
-            print(moved_val)
-            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
-            matrix[self.zero_matrix_pos[0]+1][self.zero_matrix_pos[1]]=0
+    def up(self, board):
+        pos=self.get_zero_position(board[0])
+        matrix_pos=self.get_zero_matrix_position(pos)
+        if matrix_pos[0] !=2:
+            moved_val=0
+            matrix=board[1].copy()
+            m2=board[1].copy()
+            print("initial: ", matrix)
+            if len(matrix) <=matrix_pos[0]+1:
+                return [0]
+            if len(matrix[matrix_pos[0]]) < matrix_pos[1]+1:
+                return [0]
+            moved_val=matrix[matrix_pos[0]+1][matrix_pos[1]]
+            if moved_val==0:
+                return [0]
+            matrix[matrix_pos[0]][matrix_pos[1]]=moved_val
+            matrix[matrix_pos[0]+1][matrix_pos[1]]=0
             listform=[item for sublist in matrix for item in sublist] #flattens board to an output
-            print(matrix)
+            board[1]=m2
+            print("m2", m2)
             del moved_val
             return [listform, matrix]
         else:
-            return self.board
+            return [0]
 
     def down(self):
-        matrix=self.board[1]
-        if self.zero_matrix_pos[0] !=0:
-            if self.zero_matrix_pos[0]==0:
-                return self.board
-            if len(matrix[self.zero_matrix_pos[0]]) < self.zero_matrix_pos[1]+1:
-                return self.board
-            moved_val=matrix[self.zero_matrix_pos[0]-1][self.zero_matrix_pos[1]]
-            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
-            matrix[self.zero_matrix_pos[0]-1][self.zero_matrix_pos[1]-1]=0
+        pos=self.get_zero_position(self.board[0])
+        matrix_pos=self.get_zero_matrix_position(pos)
+        if matrix_pos[0] !=0:
+            moved_val=0
+            matrix=self.board[1]
+        #    print(matrix)
+            if matrix_pos[0] ==0:
+                return [0]
+            if len(matrix[matrix_pos[0]]) < matrix_pos[1]+1:
+                return [0]
+            moved_val=matrix[matrix_pos[0]-1][matrix_pos[1]]
+            if moved_val==0:
+                return 0
+            matrix[matrix_pos[0]][matrix_pos[1]]=moved_val
+            matrix[matrix_pos[0]-1][matrix_pos[1]]=0
             listform=[item for sublist in matrix for item in sublist] #flattens board to an output
             del moved_val
             return [listform, matrix]
         else:
-            return self.board
+            return[0]
 
     def left(self):
-        matrix=self.board[1]
-        if self.zero_matrix_pos[1] !=0:
-            if len(matrix) <self.zero_matrix_pos[0]+1:
-                return self.board
-            if self.zero_matrix_pos[1]==0:
-                return self.board 
-            moved_val=matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]-1]
-            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
-            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]-1]=0
+        pos=self.get_zero_position(self.board[0])
+        matrix_pos=self.get_zero_matrix_position(pos)
+        if matrix_pos[1]!=0:
+            matrix=self.board[1]
+            if len(matrix) <=matrix_pos[0]+1:
+                return [0]
+            if matrix_pos[1] ==0:
+                return [0]
+            moved_val=matrix[matrix_pos[0]][matrix_pos[1]-1]
+            if moved_val==0:
+                return matrix
+            matrix[matrix_pos[0]][matrix_pos[1]]=moved_val
+            matrix[matrix_pos[0]][matrix_pos[1]-1]=0
             listform=[item for sublist in matrix for item in sublist] #flattens board to an output
+         #   print(matrix)
+            del moved_val
             return [listform, matrix]
         else:
-            return self.board
+            return [0] 
+            
     def right(self):
-        if self.zero_matrix_pos[1] !=2:
+        pos=self.get_zero_position(self.board[0])
+        matrix_pos=self.get_zero_matrix_position(pos)
+        if matrix_pos[1] !=2:
             matrix=self.board[1]
-            if len(matrix) <self.zero_matrix_pos[0]+1:
-                return self.board
-            if len(matrix[self.zero_matrix_pos[0]]) <= self.zero_matrix_pos[1]+1:
-                return self.board
-            moved_val=matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]+1]
-            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]]=moved_val
-            matrix[self.zero_matrix_pos[0]][self.zero_matrix_pos[1]+1]=0
+            if len(matrix) <matrix_pos[0]+1:
+                return [0]
+            if len(matrix[matrix_pos[0]]) <= matrix_pos[1]+1:
+                return [0]
+            moved_val=matrix[matrix_pos[0]][matrix_pos[1]+1]
+            if moved_val==0:
+                return [0]
+            matrix[matrix_pos[0]][matrix_pos[1]]=moved_val
+            matrix[matrix_pos[0]][matrix_pos[1]+1]=0
             listform=[item for sublist in matrix for item in sublist] #flattens board to an output
             del moved_val
             return [listform, matrix]
         else:
-            return self.board
+            return [0]
 
 
 
@@ -133,8 +159,8 @@ class Board: #class to give a board representation
                 rdif = abs((int(k/3)-i)) #diffence in postion of rows 
                 htemp+=cdif+rdif #manhattan measure is just row and column differnce summed, is admissible, see readme
         return int(htemp)
-    def get_zero_position(self): #finds the zero in the list as it is slightly faster than itterating over nested lists
-        list_form=self.board[0]
+    def get_zero_position(self, in_list_board): #finds the zero in the list as it is slightly faster than itterating over nested lists
+        list_form=in_list_board
         pos=0
         if type(list_form)==int:
             return pos
@@ -143,9 +169,9 @@ class Board: #class to give a board representation
                 pos=i
                 break
         return pos
-    def get_zero_matrix_position(self): #does algebra to return the zero's position in matrix from that in the list
-        j=self.zero_pos%3
-        i=int(self.zero_pos/3)
+    def get_zero_matrix_position(self, listpos): #does algebra to return the zero's position in matrix from that in the list
+        j=listpos%3
+        i=int(listpos/3)
         #print([i,j])
         return [i,j]
 class SearchStratagies:
@@ -243,9 +269,9 @@ def bfs(board, goal_board):
     while at_goal==False:
         cs=[] #holds frontier to expand
         cost_of_path=cost_of_path+1 #set maxium path length to then refine below
-        print("depth of path ", cost_of_path)
-        if(cost_of_path==2):
-            at_goal=True
+#       print("depth of path ", cost_of_path)
+        #if(cost_of_path==2):
+         #   at_goal=True
         for i in range(len(states_to_visit)):
             #visit all states from the parent node
             #states to visit will hold the path of states to the parent node and then, we will flatten this to all arrays later down
@@ -262,34 +288,42 @@ def bfs(board, goal_board):
             children_of_children=[]
             #clears out the held moves to use as a dummy container 
             for j in range(len(children)):
-                node_number+=1
-                current_board=children[j][0][0]
-                if current_board==goal_board:
-                    print("reached goal")
-                    at_goal=True
-                    break
+                try: #catch undexpected
+                    node_number+=1
+                    print(len(children), len(children[j][0]),)
+                    current_board=children[j][0][0]
+                    if current_board==goal_board:
+                        print("reached goal")
+                        at_goal=True
+                        break
 
                 #now this expands the nodes on the frontier
-                val=bfs_iterate(current_board, goal_board, moves, previous_states)
-                if val==-1:
-                    node_number=node_number-1
-                if val==0:
-                    previous_states.append(current_board, goal_board)
-                    for k in range(len(moves)):
-                        p=path_moves
-                        p.append(moves[k]) #captures the moves that were taken up to geting to the end
-                        moves[k]=p
-                    final_move_set=moves[-1]
-                    at_goal==True
-                    break
-                if val==1:
-                    for k in range(len(moves)):
-                        p=path_moves
-                        p.append(moves[k])
-                        moves[k]=p
-                    previous_states.append(current_board)
-                    c=StateRep(current_board, node_number)
-                    children_of_children.append(c.child) #adds the children of the current node to later add to the stack
+                    val=bfs_iterate(current_board, goal_board, moves, previous_states)
+                    if val==-1:
+                        node_number=node_number-1
+                        print("looped on child ", i, j)
+                        continue
+                    if val==0:
+                        previous_states.append(current_board, goal_board)
+                        for k in range(len(moves)):
+                            p=path_moves
+                            p.append(moves[k]) #captures the moves that were taken up to geting to the end
+                            moves[k]=p
+                        final_move_set=moves[-1]
+                        print("reached end")
+                        at_goal==True
+                        break
+                    if val==1:
+                        for k in range(len(moves)):
+                            p=path_moves
+                            p.append(moves[k])
+                            moves[k]=p
+                        previous_states.append(current_board)
+                        c=StateRep(current_board, node_number)
+                        children_of_children.append(c.child) #adds the children of the current node to later add to the stack
+                except BaseException:
+                    continue
+
             cs.append(children_of_children) #adds the new children to the frontier
             #then I will need to flatten the array slightly later
             paths_moves[i]=moves
