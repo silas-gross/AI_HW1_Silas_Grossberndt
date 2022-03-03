@@ -1,3 +1,4 @@
+import copy as cp
 import resource as rs
 import sys
 import time
@@ -203,7 +204,7 @@ class SearchStratagies:
         self.end_condition=goal
     def breadth(self,state_board): #this is a single layer breadth search
         currstate=StateRep(state_board, 0)
-        child_states=[[state_move.copy() for state_move in row] for row in currstate.child]
+        childstates=cp.deepcopy(currstate.child)
         out_moves=[]
         for i in range(len(childstates)):
             if childstates[i][0]==self.end_condition:
@@ -249,7 +250,7 @@ class SearchStratagies:
 
 def bfs_iterate(state_board, goal_board, moves, state_path):
     for i in range(len(state_path)):
-        if state_board==state_path[i]):
+        if state_board==state_path[i]:
             #node_number=node_number-1
             return -1
     searchstate=SearchStratagies("bfs", goal_board)
@@ -269,7 +270,7 @@ def bfs_iterate(state_board, goal_board, moves, state_path):
 
 def bfs(board, goal_board):
     initial_state=StateRep(board, 0)
-    child_states=[[bmove.copy() for bmove in state] for state in initial_state.child]
+    child_states=cp.deepcopy(initial_state.child)
     moves=[]
     paths_moves=[]
     output=[]
