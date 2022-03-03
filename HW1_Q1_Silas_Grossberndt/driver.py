@@ -354,9 +354,9 @@ def bfs(board, goal_board):
 
             cs.append(children_of_children) #adds the new children to the frontier
             #then I will need to flatten the array slightly later
-            paths_moves[i]=[[el for el in row] for row in moves]]
+            paths_moves[i]=[[el for el in row] for row in moves]
         states_to_visit=[]
-        tpaths=[[el for el in rowpaths_moves
+        tpaths=[[el for el in row] for row in paths_moves]
         paths_moves=[]
         for i in range(len(cs)): #flattening the frontier back into visit states
             for j in range(len(cs[i])):
@@ -386,15 +386,15 @@ def dfs_iterate( board, goal_board, path, moves, branch_number):
             return 0 #need three cases as to move back up tree to search deeper
     searchstate=SearchStratagies("dfs", current_state, goal_board)
     moves.append(search_state.depth(branch_number)) #adds moves corresponding to the first unvisited branch of the tree
-    if len(moves[-1]) != 1 and moves[-1][-1]="End":
+    if len(moves[-1]) != 1 and moves[-1][-1]=="End":
         return 0
     else:
         return 1
 
 def dfs(board, goal_board):
-    intial_state=StateRep(board,0)
+    initial_state=StateRep(board,0)
     child_states=initial_state.child
-    states_visited_board_and_child_number=[[intial_state.parent[0].board[0],0]]
+    states_visited_board_and_child_number=[[0,0],[initial_state.parent[0].board[0],0]]
     exhausted=[False] #toggle to say if there are more children nodes to explore from this node
     at_goal=False
     moves=[]
@@ -427,8 +427,7 @@ def dfs(board, goal_board):
                 node+=1
                 depth+=1
                 paths_moves[-1].append(moves[-1])
-                if len(states_visited_board_and_child_number) <depth : #adds the
- first element at this depth 
+                if len(states_visited_board_and_child_number) <depth : #adds the first element at this depth 
                     states_visited_board_and_child_number.append([[curr_board, 0]])
                 else: #adds an additional element at this depth
                     states_visited_board_and_child_number[depth].append([curr_board, 0])
