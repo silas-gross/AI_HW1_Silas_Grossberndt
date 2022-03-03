@@ -8,18 +8,23 @@ class StateRep: #class to represent the state of the board
     def __init__(self, board, counter):
          #tracks the state by assigning a number to the state that is given by order in which the state is visited
         self.parent=[Board(board), counter]
-        self.child=self.child_nodes()
-    def child_nodes(self): #generates first order child nodes from a board
+        self.child=self.child_nodes(self.parent[0].board[0])
+    def child_nodes(self, board_val): #generates first order child nodes from a board
         #this expands the state parent and puts the children on the frontier to later be expanded
         children =[]
-        if self.parent[0].up(self.parent[0].board) !=[0] :
-                children.append([self.parent[0].up(self.parent[0].board), "Up"])
-        if self.parent[0].down(self.parent[0].board) != [0]:
-            children.append([self.parent[0].down(self.parent[0].board), "Down"])
-        if self.parent[0].left(self.parent[0].board) != [0]:
-            children.append([self.parent[0].left(self.parent[0].board), "Left"])
-        if self.parent[0].right(self.parent[0].board) != [0]:
-            children.append([self.parent[0].right(self.parent[0].board), "Right"])
+        bv=board_val.copy() #protect against action changing value via pointer
+        chboard=Board(bv)
+        print(chboard.right(chboard.board), "right move")
+        if chboard.up(chboard.board) !=[0] :
+                children.append([chboard.up(chboard.board), "Up"])
+        if chboard.down(chboard.board) != [0]:
+            children.append([chboard.down(chboard.board), "Down"])
+        #print(chboard.board)
+        if chboard.left(chboard.board) != [0]:
+            chboard.append([chboard.left(chboard.board), "Left"])
+        if chboard.right(chboard.board) != [0]:
+            children.append([chboard.right(chboard.board), "Right"])
+        #print(children, len(children))
         return children
     def compare_state_to_board(self, board_to_compare): #compares the list form of the two boards
         listform=self.parent[0].board[0]
@@ -82,7 +87,7 @@ class Board: #class to give a board representation
             matrix[matrix_pos[0]+1][matrix_pos[1]]=0
             listform=[item for sublist in matrix for item in sublist] #flattens board to an output
             board[1]=m2
-            print("changed", matrix)
+            #print("changed", matrix)
             del moved_val
             return [listform, matrix]
         else:
@@ -118,8 +123,9 @@ class Board: #class to give a board representation
             return[0]
 
     def right(self, board):
-        pos=self.get_zero_position(board)
+        pos=self.get_zero_position(board[0])
         matrix_pos=self.get_zero_matrix_position(pos)
+        print(pos,matrix_pos)
         if matrix_pos[1]!=0:
             matrix=[]
             for i in range(len(board[1])):
@@ -154,9 +160,9 @@ class Board: #class to give a board representation
                 for j in range(len(board[1][i])):
                     rm.append(board[1][i][j])
                 matrix.append(rm)         
-            if len(matrix) <matrix_pos[0]+1:
+            if len(matrix) <3:
                 return [0]
-            if len(matrix[matrix_pos[0]]) <= matrix_pos[1]+1:
+            if len(matrix[matrix_pos[0]]) <3:
                 return [0]
             moved_val=matrix[matrix_pos[0]][matrix_pos[1]+1]
             if moved_val==0:
