@@ -14,12 +14,12 @@ class StateRep: #class to represent the state of the board
         children =[]
         if self.parent[0].up(self.parent[0].board) !=[0] :
                 children.append([self.parent[0].up(self.parent[0].board), "Up"])
-        if self.parent[0].down() != [0]:
-            children.append([self.parent[0].down(), "Down"])
-        if self.parent[0].left() != [0]:
-            children.append([self.parent[0].left(), "Left"])
-        if self.parent[0].right() != [0]:
-            children.append([self.parent[0].right(), "Right"])
+        if self.parent[0].down(self.parent[0].board) != [0]:
+            children.append([self.parent[0].down(self.parent[0].board), "Down"])
+        if self.parent[0].left(self.parent[0].board) != [0]:
+            children.append([self.parent[0].left(self.parent[0].board), "Left"])
+        if self.parent[0].right(self.parent[0].board) != [0]:
+            children.append([self.parent[0].right(self.parent[0].board), "Right"])
         return children
     def compare_state_to_board(self, board_to_compare): #compares the list form of the two boards
         listform=self.parent[0].board[0]
@@ -63,9 +63,14 @@ class Board: #class to give a board representation
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[0] !=2:
             moved_val=0
-            matrix=board[1].copy()
+            matrix=[]
+            for i in range(len(board[1])):
+                rm=[]
+                for j in range(len(board[1][i])):
+                    rm.append(board[1][i][j])
+                matrix.append(rm)
             m2=board[1].copy()
-            print("initial: ", matrix)
+       #     print("initial: ", matrix)
             if len(matrix) <=matrix_pos[0]+1:
                 return [0]
             if len(matrix[matrix_pos[0]]) < matrix_pos[1]+1:
@@ -77,18 +82,25 @@ class Board: #class to give a board representation
             matrix[matrix_pos[0]+1][matrix_pos[1]]=0
             listform=[item for sublist in matrix for item in sublist] #flattens board to an output
             board[1]=m2
-            print("m2", m2)
+            print("changed", matrix)
             del moved_val
             return [listform, matrix]
         else:
             return [0]
 
-    def down(self):
-        pos=self.get_zero_position(self.board[0])
+    def down(self, board):
+        pos=self.get_zero_position(board[0])
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[0] !=0:
             moved_val=0
-            matrix=self.board[1]
+           
+            matrix=[]
+            for i in range(len(board[1])):
+                rm=[]
+                for j in range(len(board[1][i])):
+                    rm.append(board[1][i][j])
+                matrix.append(rm)
+
         #    print(matrix)
             if matrix_pos[0] ==0:
                 return [0]
@@ -105,11 +117,17 @@ class Board: #class to give a board representation
         else:
             return[0]
 
-    def left(self):
-        pos=self.get_zero_position(self.board[0])
+    def left(self, board):
+        pos=self.get_zero_position(board)
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[1]!=0:
-            matrix=self.board[1]
+            matrix=[]
+            for i in range(len(board[1])):
+                rm=[]
+                for j in range(len(board[1][i])):
+                    rm.append(board[1][i][j])
+                matrix.append(rm)
+         
             if len(matrix) <=matrix_pos[0]+1:
                 return [0]
             if matrix_pos[1] ==0:
@@ -126,11 +144,16 @@ class Board: #class to give a board representation
         else:
             return [0] 
             
-    def right(self):
+    def right(self, board):
         pos=self.get_zero_position(self.board[0])
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[1] !=2:
-            matrix=self.board[1]
+            matrix=[]
+            for i in range(len(board[1])):
+                rm=[]
+                for j in range(len(board[1][i])):
+                    rm.append(board[1][i][j])
+                matrix.append(rm)         
             if len(matrix) <matrix_pos[0]+1:
                 return [0]
             if len(matrix[matrix_pos[0]]) <= matrix_pos[1]+1:
@@ -269,7 +292,7 @@ def bfs(board, goal_board):
     while at_goal==False:
         cs=[] #holds frontier to expand
         cost_of_path=cost_of_path+1 #set maxium path length to then refine below
-#       print("depth of path ", cost_of_path)
+        print("depth of path ", cost_of_path)
         #if(cost_of_path==2):
          #   at_goal=True
         for i in range(len(states_to_visit)):
