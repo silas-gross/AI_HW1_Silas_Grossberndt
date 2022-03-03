@@ -58,7 +58,7 @@ class Board: #class to give a board representation
             matrix.append(row)
         return matrix
     #these four methods give board that results from taking an action 
-    def up(self, board):
+    def down(self, board):
         pos=self.get_zero_position(board[0])
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[0] !=2:
@@ -88,7 +88,7 @@ class Board: #class to give a board representation
         else:
             return [0]
 
-    def down(self, board):
+    def up(self, board):
         pos=self.get_zero_position(board[0])
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[0] !=0:
@@ -117,7 +117,7 @@ class Board: #class to give a board representation
         else:
             return[0]
 
-    def left(self, board):
+    def right(self, board):
         pos=self.get_zero_position(board)
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[1]!=0:
@@ -144,7 +144,7 @@ class Board: #class to give a board representation
         else:
             return [0] 
             
-    def right(self, board):
+    def left(self, board):
         pos=self.get_zero_position(self.board[0])
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[1] !=2:
@@ -204,7 +204,7 @@ class SearchStratagies:
         self.end_condition=goal
         self.state_to_expand=state
     def breadth(self): #this is a single layer breadth search
-        childstates=self.state_to_expand.child
+        childstates=self.state_to_expand.child.copy()
         out_moves=[]
         for i in range(len(childstates)):
             if childstates[i][0]==self.end_condition:
@@ -216,7 +216,7 @@ class SearchStratagies:
             self.output=out_moves
         return self.output 
     def depth(self, branch_number): #this is opening one note and going one layer down in depth
-        childstates=self.state_to_expand.child
+        childstates=self.state_to_expand.child.copy()
         if childstates[branch_number][0][0]==self.end_condition:
             self.output.append([childstates[branch_number][1], "End"])
         else:
@@ -283,8 +283,8 @@ def bfs(board, goal_board):
         moves.append("Goal achived")
     node_number+=len(child_states)
     paths_moves=moves
-    visited_states=[board]
-    final_move_set=[]
+    visited_states=[board] #stores all boards for visited states
+    final_move_set=[] #output for final path
     states_to_visit=[]
     for i in range(len(child_states)):
         states_to_visit.append([[board], child_states[i]]) #sets up list of states that we are going to visit from a single node
@@ -325,7 +325,7 @@ def bfs(board, goal_board):
                         break
 
                 #now this expands the nodes on the frontier
-                    val=bfs_iterate(current_board, goal_board, moves, previous_states)
+                    val=bfs_iterate(current_board, goal_board, moves, visited_states)
                     if val==-1:
                         node_number=node_number-1
                         print("looped on child ", i, j)
@@ -333,18 +333,19 @@ def bfs(board, goal_board):
                     if val==0:
                         previous_states.append(current_board, goal_board)
                         for k in range(len(moves)):
-                            p=path_moves
+                            p=path_moves.copy()
                             p.append(moves[k]) #captures the moves that were taken up to geting to the end
-                            moves[k]=p
+                            moves[k]=p.copy()
                         final_move_set=moves[-1]
                         print("reached end")
                         at_goal==True
                         break
                     if val==1:
+                        visited_states.append(current_board)
                         for k in range(len(moves)):
-                            p=path_moves
+                            p=path_moves.copy()
                             p.append(moves[k])
-                            moves[k]=p
+                            moves[k]=p.copy()
                         previous_states.append(current_board)
                         c=StateRep(current_board, node_number)
                         children_of_children.append(c.child) #adds the children of the current node to later add to the stack
@@ -353,9 +354,9 @@ def bfs(board, goal_board):
 
             cs.append(children_of_children) #adds the new children to the frontier
             #then I will need to flatten the array slightly later
-            paths_moves[i]=moves
+            paths_moves[i]=[[el for el in row] for row in moves]]
         states_to_visit=[]
-        tpaths=paths_moves
+        tpaths=[[el for el in rowpaths_moves
         paths_moves=[]
         for i in range(len(cs)): #flattening the frontier back into visit states
             for j in range(len(cs[i])):
@@ -377,23 +378,82 @@ def bfs(board, goal_board):
     return output
 
 
-def dfsitterate(node_number, board, goal_board, path, moves, branch_number):
-    node_number=node_number+1
-    current_state=StateRep(board, node_number)
+def dfs_iterate( board, goal_board, path, moves, branch_number):
+    current_state=StateRep(board, 0)
     for i in range(len(path)):
         #check to see that the state has not been visited in this path
-        if current_state.compare_state_to_board(path[i]):
-            node_number=node_number-1
-            return "looped" #need three cases as to move back up tree to search deeper
-    path.append(board)
+        if current_state.compare_state_to_board(path[i][0]):
+            return 0 #need three cases as to move back up tree to search deeper
     searchstate=SearchStratagies("dfs", current_state, goal_board)
     moves.append(search_state.depth(branch_number)) #adds moves corresponding to the first unvisited branch of the tree
-    if len(moves[-1]) != 1:
-        return "goal"
+    if len(moves[-1]) != 1 and moves[-1][-1]="End":
+        return 0
     else:
-        return "keep going"
+        return 1
 
 def dfs(board, goal_board):
+    intial_state=StateRep(board,0)
+    child_states=initial_state.child
+    states_visited_board_and_child_number=[[intial_state.parent[0].board[0],0]]
+    exhausted=[False] #toggle to say if there are more children nodes to explore from this node
+    at_goal=False
+    moves=[]
+    depth=0
+    paths_moves=[] #moves taken when traversing a path 
+    cost_of_path=0
+    max_depth=0
+    nodes=0
+    current_state=StateRep(board,0)
+    while at_goal==False:
+            curr_child=states_visited_board_and_child_number[depth][-1][1]
+            val=dfs_iterate(current_state.parent[0].board[0], goal_board, states_visited_board_and_child_number, moves, curr_child)
+            nchild=len(current_state.child)
+            if val==-1:
+                if curr_child<nchild:
+                    states_visited_board_and_child_number[depth][-1][1] +=1
+                    paths_moves.append([])
+                else:
+                    exhausted[depth]=True
+                    if max_depth<depth:
+                        max_depth=depth
+                    while exhausted[depth]==True:
+                        moves.pop()
+                        depth=depth-1
+                        curr_board=states_visited_board_and_child_number[depth][-1][0]
+                        curr_branch=states_visited_board_and_child_number[depth][-1][1]
+                        current_state=StateRep(curr_board, 0) 
+                        n_old_child=len(current_state.child)
+            if val==0:
+                node+=1
+                depth+=1
+                paths_moves[-1].append(moves[-1])
+                if len(states_visited_board_and_child_number) <depth : #adds the
+ first element at this depth 
+                    states_visited_board_and_child_number.append([[curr_board, 0]])
+                else: #adds an additional element at this depth
+                    states_visited_board_and_child_number[depth].append([curr_board, 0])
+                at_goal=True
+            if val==1:
+                node+=1
+                depth+=1
+                paths_moves[-1].append(moves[-1])
+                curr_board=current_state.child[0][0][0]
+                current_states=StateRep(curr_board, 0)
+                if len(states_visited_board_and_child_number) <depth : #adds the first element at this depth 
+                    states_visited_board_and_child_number.append([[curr_board, 0]])
+                else: #adds an additional element at this depth
+                    states_visited_board_and_child_number[depth].append([curr_board, 0])
+
+    output=[]
+    output.append(paths_moves[-1]) #gives path to goal
+    output.append(depth) #cost=depth of path
+    output.append(node)
+    output.append(depth)
+    output.append(max_depth)
+
+
+#this is the old def, going from scratch 
+def dfs_old(board, goal_board):
     initial_state=StateRep(board, 0)
     child_states=initial_state.child
     current_state=StateRep(child_states[0][0],1)
