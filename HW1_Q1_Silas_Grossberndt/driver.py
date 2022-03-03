@@ -1,4 +1,3 @@
-import numpy as np
 import resource as rs
 import sys
 import time
@@ -198,13 +197,13 @@ class Board: #class to give a board representation
         #print([i,j])
         return [i,j]
 class SearchStratagies:
-    def __init__(self, method, state, goal):
+    def __init__(self, method, goal):
         self.method=method
         self.output=[]
         self.end_condition=goal
-        self.state_to_expand=state
-    def breadth(self): #this is a single layer breadth search
-        childstates=self.state_to_expand.child.copy()
+    def breadth(self,state_board): #this is a single layer breadth search
+        currstate=StateRep(state_board, 0)
+        child_states=[[state_move.copy() for state_move in row] for row in currstate.child]
         out_moves=[]
         for i in range(len(childstates)):
             if childstates[i][0]==self.end_condition:
@@ -249,24 +248,28 @@ class SearchStratagies:
         
 
 def bfs_iterate(state_board, goal_board, moves, state_path):
-    curr_state=StateRep(state_board, 0)
     for i in range(len(state_path)):
-        if curr_state.compare_state_to_board(state_path[i]):
+        if state_board==state_path[i]):
             #node_number=node_number-1
             return -1
-    searchstate=SearchStratagies("bfs", curr_state, goal_board)
-    smoves=searchstate.breadth()
+    searchstate=SearchStratagies("bfs", goal_board)
+    smoves=searchstate.breadth(state_board).copy()
     #print(smoves)
     for j in range(len(smoves)):
         moves.append(smoves)
+    if len(moves[-1]) != 1:
+        print(moves[-1])
     if len(moves[-1]) !=1 and moves[-1][-1]=="End": #checks if goal has been reached
             return 0
     else:
         return 1
+    #so this takes in a current state to look at, a goal state to reach, an matrix of moves and a list of former states in the path
+    #then it outputs a condition to tell us if the path has reached a terminus, the goal or keep going
+    #moves gets all the allowed moves that take us to the children state of the node 
 
 def bfs(board, goal_board):
     initial_state=StateRep(board, 0)
-    child_states=initial_state.child
+    child_states=[[bmove.copy() for bmove in state] for state in initial_state.child]
     moves=[]
     paths_moves=[]
     output=[]
@@ -296,12 +299,14 @@ def bfs(board, goal_board):
         #if(cost_of_path==2):
          #   at_goal=True
         if len(states_to_visit)==0:
-            at_goal=True
+            at_goal=True #if there are no other states in queue to visit, we have reached an end
         for i in range(len(states_to_visit)):
             #visit all states from the parent node
             #states to visit will hold the path of states to the parent node and then, we will flatten this to all arrays later down
-            children=states_to_visit[i][1] 
-            previous_states=states_to_visit[i][0]
+            children=[]
+            for j in range(len(states_to_visit[i][1])):
+                children.append(states_to_visit[i][1][j][0][0]) #passes the list description of the board to the children array 
+            previous_states=states_to_visit[i][0].copy()
             if type(previous_states)==str:
                 continue
             #this is the list of children in this node and the states to prevent visiting the same node twice
@@ -317,8 +322,7 @@ def bfs(board, goal_board):
             for j in range(len(children)):
                 try: #catch undexpected
                     node_number+=1
-                    print(len(children), len(children[j][0]),)
-                    current_board=children[j][0][0]
+                    current_board=children[j].copy()
                     if current_board==goal_board:
                         print("reached goal")
                         at_goal=True
@@ -336,7 +340,7 @@ def bfs(board, goal_board):
                             p=path_moves.copy()
                             p.append(moves[k]) #captures the moves that were taken up to geting to the end
                             moves[k]=p.copy()
-                        final_move_set=moves[-1]
+                        final_move_set=p.copy()
                         print("reached end")
                         at_goal==True
                         break
