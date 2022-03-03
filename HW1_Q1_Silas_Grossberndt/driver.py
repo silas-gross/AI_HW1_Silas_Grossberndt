@@ -295,6 +295,8 @@ def bfs(board, goal_board):
         print("depth of path ", cost_of_path)
         #if(cost_of_path==2):
          #   at_goal=True
+        if len(states_to_visit)==0:
+            at_goal=True
         for i in range(len(states_to_visit)):
             #visit all states from the parent node
             #states to visit will hold the path of states to the parent node and then, we will flatten this to all arrays later down
@@ -304,11 +306,13 @@ def bfs(board, goal_board):
                 continue
             #this is the list of children in this node and the states to prevent visiting the same node twice
             move=[]
-            path_moves=paths_moves[i]
+            path_moves=[[el for el in row] for row in paths_moves[i]]
             if type(path_moves)==str:
                 paths_moves[i]=[path_moves]
                 path_moves=[path_moves]
             children_of_children=[]
+            if len(children)==0:
+                break
             #clears out the held moves to use as a dummy container 
             for j in range(len(children)):
                 try: #catch undexpected
