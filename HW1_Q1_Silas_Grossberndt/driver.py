@@ -243,7 +243,7 @@ def bfs(board, goal_board):
             at_goal=True
             break
         else:
-            child= cp.deepcopy(current.child_nodes(current.parent[0].board[0]))
+            child= list(current.child_nodes(current.parent[0].board[0]))
             for c in child:
                 to_visit.append(c)
     if at_goal==False:
@@ -282,15 +282,16 @@ def dfs(board, goal_board):
             continue
         node+=1
         if max_depth<len(current.moves):
-            max_depth=len(current.moves)
+            max_depth=len(current.moves)+1
         if current.compare_state_to_board(goal_board):
             if len(current.moves)<len(solution) or solution==[]:
-                solution=cp.deepcopy(current.moves)
+                solution=list(current.moves)
             at_goal=True
             print(len(to_visit))
         else:
-            child= cp.deepcopy(current.child_nodes(current.parent[0].board[0]))
+            child= list(current.child_nodes(current.parent[0].board[0]))
             states_visited.add(current.sn)
+            child=child[::-1]
             for c in child:
                to_visit.append(c)
     if at_goal==False:
@@ -308,7 +309,7 @@ def dfs(board, goal_board):
     output.append(len(solution)) #cost=depth of path
     output.append(node)
     output.append(len(solution))
-    output.append(max_depth+1)
+    output.append(max_depth)
     return output
 
 def ast(board, goal_board):
@@ -335,7 +336,7 @@ def ast(board, goal_board):
         if max_depth<len(current.moves):
             max_depth=len(current.moves)
         if current.compare_state_to_board(goal_board):
-            solution=cp.deepcopy(current.moves)
+            solution=list(current.moves)
             cost_of_path=highest_priority+1
             at_goal=True
             break
