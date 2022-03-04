@@ -18,5 +18,7 @@ and then the output will be given in a text file in the form (note the cost is =
 >running\_time: in seconds
 >max\_ram\_usage: in MB
 
+The method also has cross checks for non-reachable boards, i.e. boards iwth no solutions, be given as inputs, which is acomplished by checking if a test board [0,2,1,3,4,5,6,7,8] appears in the search tree, as that means we have reached as state that can not be reached from the goal, thus none of the other states in the search tree are allowable.
 #Goals Accomplished/Not accomplished
-This work has accomplished all major goals and is safe against already solved input in the initial state
+This work has accomplished all major goals and is safe against already solved input in the initial state.
+
