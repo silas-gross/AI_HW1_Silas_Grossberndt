@@ -49,7 +49,7 @@ class StateRep: #class to represent the state of the board
     def __eq__(self, obj):
         return self.sn==ob.sn
     def dfshash(self):
-        m=cp.deepcopy(self.moves)
+        m=self.moves.copy()
         m.append(self.parent[0].board[0])
         dtuple=tuple(tuple(l for l in a) for a in m)
         return hash(dtuple)
@@ -239,7 +239,7 @@ def bfs(board, goal_board):
         if max_depth<len(current.moves):
             max_depth=len(current.moves)
         if current.compare_state_to_board(goal_board):
-            solution=cp.deepcopy(current.moves)
+            solution=current.moves.copy() 
             at_goal=True
             break
         else:
@@ -253,6 +253,7 @@ def bfs(board, goal_board):
         output.append(node)
         output.append(max_depth)
         output.append(max_depth)
+        print("State doesn't reach goal")
         return output
 
     output=[]
@@ -276,7 +277,8 @@ def dfs(board, goal_board):
     states_visited=set()
     while len(to_visit) >0:
         current=to_visit.pop()
-        if current.dfshash() in states_visited:
+        if current.sn in states_visited:
+            states_visited.pop()
             continue
         node+=1
         if max_depth<len(current.moves):
@@ -288,11 +290,12 @@ def dfs(board, goal_board):
             print(len(to_visit))
         else:
             child= cp.deepcopy(current.child_nodes(current.parent[0].board[0]))
-            states_visited.add(current.dfshash())
+            states_visited.add(current.sn)
             for c in child:
                to_visit.append(c)
     if at_goal==False:
         output=[]
+        print("This state doesn't reach goal")
         output.append(["Doesn't Reach Goal"])
         output.append(max_depth)
         output.append(node)
@@ -317,17 +320,17 @@ def ast(board, goal_board):
     node=0
     to_visit={initial_state.parent[0].h : [initial_state]}
     states_visited=set()
-    highest_priority=initial_state_parent[0].h
+    highest_priority=initial_state.parent[0].h
     while len(to_visit) >0:
-        current=to_visit[highest_priority].pop()
         if len(to_visit[highest_priority])==0:
             to_visit.pop(highest_priority)
-            priorities=to_visit.keys()
+            priorities=list(to_visit.keys())
             priorities.sort()
             highest_priority=priorities[0]
-        if current.sn in states_visited:
+        current=to_visit[highest_priority].pop()
+        if current.dfshash() in states_visited:
             continue
-        states_visited.add(current.sn)
+        states_visited.add(current.dfshash())
         node+=1
         if max_depth<len(current.moves):
             max_depth=len(current.moves)
@@ -337,9 +340,9 @@ def ast(board, goal_board):
             at_goal=True
             break
         else:
-            child= cp.deepcopy(current.child_nodes(current.parent[0].board[0]))
+            child= [el for el in current.child_nodes(current.parent[0].board[0])]
             for c in child:
-                cost=c.parent[0].board.h+highest_priority+1
+                cost=c.parent[0].h+highest_priority+1
                 if cost in to_visit:
                     to_visit[cost].append(c)
                 else:
@@ -353,6 +356,7 @@ def ast(board, goal_board):
         output.append(node)
         output.append(max_depth)
         output.append(max_depth+1)
+        print("State doesn't reach goal")
         return output
 
     output=[]

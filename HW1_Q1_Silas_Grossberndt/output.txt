@@ -1,7 +1,7 @@
-path_to_goal: ['Left','Down','Right','Up','Left','Down','Right','Up','Left','Up','Right','Down','Left','Down','Right','Up','Left','Down','Right','Up','Left','Up','Right','Down','Left','Down','Right','Up','Left','Down','Right','Up','Left','Up','Right','Down','Left','Down','Right','Up','Left','Down','Right','Up','Left','Up','Right','Down','Left','Down','Right','Up','Left','Down','Right','Up','Left','Up','Left']
- cost_of_path: 59
- nodes_expanded: 718
- search_depth: 59
- max_search_depth: 180
- running_time: 0.11603903770446777
- max_ram_usage: 10440
+path_to_goal: ['Left','Down','Right','Up','Left','Down','Right','Up','Left','Down','Right','Up','Left','Up','Right','Down','Left','Down','Up','Up','Right','Down','Left','Down','Right','Up','Up','Left','Down','Down','Right','Up','Left','Down','Right','Up','Up','Left','Down','Down','Right','Up','Left','Up','Right','Down','Left','Up','Right','Down','Left','Down','Right','Up','Left','Down','Right','Up','Up','Left','Left']
+ cost_of_path: 61
+ nodes_expanded: 11353
+ search_depth: 61
+ max_search_depth: 392
+ running_time: 2.5419673919677734
+ max_ram_usage: 11484
