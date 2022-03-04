@@ -16,7 +16,7 @@ class StateRep: #class to represent the state of the board
         #this expands the state parent 
         #makes it as a call to expand rather than a value to call so that way I can get the children as a staterep withotu loading all downstream children later
         children =[]
-        bv=board_val.copy() #protect against action changing value via pointer
+        bv=list(board_val) #protect against action changing value via pointer
         chboard=Board(bv)
         nextboard=[]
         #print(chboard.right(chboard.board), "right move")
@@ -86,8 +86,7 @@ class Board: #class to give a board representation
                 rm=[]
                 for j in range(len(board[1][i])):
                     rm.append(board[1][i][j])
-                matrix.append(rm)
-            m2=board[1].copy()
+                matrix.append(rm) 
        #     print("initial: ", matrix)
             if len(matrix) <=matrix_pos[0]+1:
                 return [0]
@@ -99,7 +98,6 @@ class Board: #class to give a board representation
             matrix[matrix_pos[0]][matrix_pos[1]]=moved_val
             matrix[matrix_pos[0]+1][matrix_pos[1]]=0
             listform=[item for sublist in matrix for item in sublist] #flattens board to an output
-            board[1]=m2
             #print("changed", matrix)
             del moved_val
             return listform
@@ -111,7 +109,6 @@ class Board: #class to give a board representation
         matrix_pos=self.get_zero_matrix_position(pos)
         if matrix_pos[0] !=0: #makes sure move can be taken
             moved_val=0
-           
             matrix=[]
             for i in range(len(board[1])):
                 rm=[]
@@ -335,7 +332,7 @@ def ast(board, goal_board, bad_board):
             priorities.sort()
             highest_priority=priorities[0]
         current=to_visit[highest_priority].pop() #opens deepest node at this priority
-        if current.sn() in states_visited: #checks to see if this state has been previously visited
+        if current.sn in states_visited: #checks to see if this state has been previously visited
             continue
         states_visited.add(current.sn) #adds the hash value to do faster lookup of previously visited states
         node+=1 #measures number of nodes visited
@@ -383,15 +380,6 @@ def ast(board, goal_board, bad_board):
 method=str(sys.argv[1])
 boardin=sys.argv[2]
 board=[]
-#this block tests to see if the entered board configuration is in the expected form
-is_valid=True
-if len(boardin) !=9
-    is_valid=False
-else:    
-    for i in range(9):
-        if ! (i in boardin):
-            is_valid=False
-            break
 #loads the board to a list form
 for i in range(len(boardin)):
     if boardin[i]==',':
@@ -399,6 +387,17 @@ for i in range(len(boardin)):
     else:
         board.append(int(boardin[i]))
 start=time.time()
+#this block tests to see if the entered board configuration is in the expected form
+is_valid=True
+if len(board) !=9:
+    print(len(board))
+    is_valid=False
+else:    
+    for i in range(9):
+        is_valid=i in board
+        if is_valid==False:
+            print(i)
+            break
 
 #create output file in write mode
 outfile=open("output.txt", "w")
@@ -412,7 +411,8 @@ out=[]
 #process the input and begin running in mode requested
 if is_valid==False:
     print("Invalid board configuration detected. Please check board configuration (should be a list of numbers 0-8 using all without repeats")
-if method=="BFS" or method=="bfs" or method=="Bfs":
+    quit()
+elif method=="BFS" or method=="bfs" or method=="Bfs":
     print( "Solving board using breadth first search method")
     out=bfs(board, goal_board, bad_board)
 elif method=="DFS" or method=="dfs" or method=="Dfs":
