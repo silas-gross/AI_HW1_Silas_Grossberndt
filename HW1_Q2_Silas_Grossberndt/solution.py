@@ -4,9 +4,35 @@
 class states:
     def __init__(self):
         a
-class costraints:
-    def __init__(self, letter1, letter2, letter3):
-        self.problem={letter1:0, letter2:0, letter3:0}
+class constraints:
+    def __init__(self, l):
+        self.problem=dict(l)
+    def assign_value(self, a):
+        l=dict(self.problem)
+        for l in letters.keys():
+            i=0
+            if type(letters[l]) != int:
+                l=a[i]
+                i++
+        return l
+    def check_if_valid(self,key_array):
+        l=self.problem
+        rhs=0
+        lsh=0
+        if len(k)==3:
+            rhs=l[k[2]]+l[k[1]]
+            lhs=l[k[0]]
+        elif len(k)==2:
+            rhs=l[k[1]]
+            lhs=l[k[0]]
+        else:
+            rhs=1
+            lhs=l[k[0]]
+        if rhs==lhs or rhs==lhs+10:
+            return True
+        else:
+            return False
+
 
 
 def main():
@@ -27,7 +53,7 @@ def main():
     for letter in alphabet:
         is_in=letter in words
         if is_in:
-            letters[letter]=dummy_val
+            letters[letter]=range(10) #sets all possible values for the lettes
             dummy_val+=1
     #now we have a dictionary where the keys are the letters and the vaules are the values
     #next goal is to represent constraints 
@@ -52,9 +78,12 @@ def main():
 #best thing to do is to set up a search tree where the state is given by assigned values I guess?
 #so this is really a CSP probably, but I feel like this may actually be the goal next time
 #instead, assign a value to one of the letters, then assign more values until you reach a position that is not allowed
-
+    solution=dict()
+    c=constraints(letters)
+    is_solution==false
+    tried_sols=[]
     for i in range(len(word3)): #largest of the arrays by requirement 
-        l.append(word3[i])
+        l=[word3[i]]
         try:
             l.append(word2[i])
         except:
@@ -66,6 +95,52 @@ def main():
         if len(l)==2 and l[0]!=l[1]:
             print("no solution possible")
             quit()
-        for
+        for k in range(10): #this is going to be the slowest way of doing this I know
+            for j in range(len(ls))
+                a=range(len(ls))
+                solution.append(c.assign_values(a))
+                if hash(solution[-1]) in tried_sols: 
+                    continue
+                else:
+                    tried_sols.append(hash(solution[-1])) #makes sure not to try same solution twice
+                is_good=c.check_if_valid(l)
+                if is_good==False:
+                    solution.pop()
+                h=a[j]
+                a[j]+=k 
+                a[j]=a[j]%10
+                for m in range(len(ls)): #makes sure we don't assign the same value twice
+                    if m!=j and a[m]= a[j]:
+                        a[m]=h
+   for j in range(len(word3)): #testing the solutions to see if they are valid for all of the contraints
+        l=[word3[i]]
+        try:
+            l.append(word2[i])
+        except:
+
+        try:
+            l.append(word1[i])
+        except:
+        
+        for s in range(len(solution)):
+            c=constraint(solution[s])
+            t=c.is_valid(l)
+            if t==False:
+                solution.pop(s)
+    all_vals=dict(letters)
+    for k in all_vals.keys():
+        all_vals[k]=[]
+    for s in solution:
+        sk=s.keys()
+        for k in sk:
+            all_vals[k].append[s[k]]
+    for k in all_vals.keys():
+        print(k ": \" " all_vals[k] " \" ")
+
+
+                    
+#going to use a DFS to search the state space 
+#aiming to return all possible solutions to the state
+
         
 
